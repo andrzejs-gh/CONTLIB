@@ -11,7 +11,7 @@
 ## Overview
 CONTILB provides **cont** objects - generic dynamic containers for storing elements of arbitrary size.
 
-**cont** struct:
+**cont** struct (non-opaque):
 ```c
 typedef struct
 {

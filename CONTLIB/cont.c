@@ -59,6 +59,7 @@ int cont_is_valid(cont* cnt)
 				(growth_factor > GF_LOWER_BOUND) &&
 				(growth_factor < GF_UPPER_BOUND)
 			) || !isfinite(growth_factor)
+
 	   ) return 0;
 
 	if ( !cnt->addr )
@@ -341,11 +342,6 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	
 	if ( num_of_items > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
-
-	// uintptr_t cont_addr = (uintptr_t)cnt->addr;
-	// uintptr_t cont_end = cont_addr + cnt->capacity*unit;
-	// if ( (uintptr_t)arr >= cont_addr && (uintptr_t)arr <= cont_end )
-	// 	return BUFFER_OVERLAP;
 	
 	size_t size_to_copy = num_of_items * unit;
 	size_t last_indx_plus_one = index + num_of_items;
@@ -367,7 +363,7 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 		cnt->count = last_indx_plus_one;
 	}
 
-	memcpy(cnt->addr+(index*unit), arr, size_to_copy);
+	memmove(cnt->addr+(index*unit), arr, size_to_copy);
     
     return 0;
 }
@@ -423,11 +419,6 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 
 	size_t unit = cnt->unit;
 
-	// uintptr_t cont_addr = (uintptr_t)cnt->addr;
-	// uintptr_t cont_end = cont_addr + cnt->capacity*unit;
-	// if ( (uintptr_t)arr >= cont_addr && (uintptr_t)arr <= cont_end )
-	// 	return BUFFER_OVERLAP;
-
 	if ( count > SIZE_MAX - num_of_items)
 		return SIZE_OVERFLOW;
 	
@@ -443,15 +434,15 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	if ( new_count > cnt->capacity )
 	{
 		int ret = cont_grow(cnt, new_count);
-		if ( ret ) // cont_grow returns and error code
+		if ( ret ) // cont_grow returns an error code
 			return ret;
 	}
 
 	unsigned char* position = cnt->addr + index*unit;
 	size_t inserted_size = num_of_items*unit;
 	
-	memmove( position+inserted_size, position, (count-index)*unit );
-	memcpy( position, arr, inserted_size );
+	memmove(position+inserted_size, position, (count-index)*unit);
+	memmove(position, arr, inserted_size);
 	cnt->count += num_of_items;
 
 	return 0;

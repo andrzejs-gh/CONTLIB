@@ -30,8 +30,7 @@ enum error_codes
 	SAME_CONT,
 	INVALID_RANGE,
 	CONT_IS_INVALID,
-	CONT_IS_NULL,
-	BUFFER_OVERLAP
+	CONT_IS_NULL
 };
 
 typedef struct

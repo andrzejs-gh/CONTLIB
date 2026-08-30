@@ -105,18 +105,20 @@ int cont_set_capacity(cont* cnt, size_t capacity)
 	void* ptr;
 	if ( cnt->alignment <= _Alignof(max_align_t) )
 	{
-		ptr = realloc( cnt->addr, capacity*unit );
+		ptr = realloc(cnt->addr, capacity*unit);
 		if ( !ptr )
 			return REALLOC_FAILURE;
 	}
 	else // cont contains overaligned objects
 	{
-		ptr = aligned_alloc( cnt->alignment, capacity*unit );
+		ptr = aligned_alloc(cnt->alignment, capacity*unit);
 		if ( !ptr )
 			return REALLOC_FAILURE;
 
-		memcpy( ptr, cnt->addr, cnt->count*unit );
-		free( cnt->addr );
+		size_t size_to_copy = (capacity > cnt->count) ? cnt->count : capacity;
+
+		memcpy(ptr, cnt->addr, size_to_copy);
+		free(cnt->addr);
 	}
 
 	if (cnt->count > capacity)
@@ -139,25 +141,27 @@ int cont_set_max_capacity(cont* cnt, size_t max_size)
 	
 	if ( max_size == NO_LIMIT )
 	{
-		cnt->max_capacity = max_size;
+		cnt->max_capacity = NO_LIMIT;
 	}
 	else if ( cnt->count > max_size || cnt->capacity > max_size )
 	{
 		void* ptr;
 		if ( cnt->alignment <= _Alignof(max_align_t) )
 		{
-			ptr = realloc( cnt->addr, max_size*unit );
-			if (!ptr)
+			ptr = realloc(cnt->addr, max_size*unit);
+			if ( !ptr )
 				return REALLOC_FAILURE;
 		}
 		else // cont contains overaligned objects
 		{
-			ptr = aligned_alloc( cnt->alignment, max_size*unit );
+			ptr = aligned_alloc(cnt->alignment, max_size*unit);
 			if ( !ptr )
 				return REALLOC_FAILURE;
 
-			memcpy( ptr, cnt->addr, cnt->count*unit );
-			free( cnt->addr );
+			size_t size_to_copy = (max_size > cnt->count) ? cnt->count : max_size;
+
+			memcpy(ptr, cnt->addr, size_to_copy);
+			free(cnt->addr);
 		}
 		
 		cnt->addr = ptr;
@@ -780,6 +784,9 @@ cont cont_sub(cont* cnt, size_t index, size_t n_elements)
 
 int cont_grow(cont* cnt, size_t required_capacity)
 {
+	if ( !cnt )
+		return CONT_IS_NULL;
+
 	double final_capacity = cnt->capacity;
 	double growth_factor = cnt->growth_factor;
 	
@@ -816,7 +823,7 @@ int cont_grow(cont* cnt, size_t required_capacity)
 		ptr = aligned_alloc(cnt->alignment, final_capacity_*unit);
 		if ( !ptr ) return REALLOC_FAILURE;
 
-		memcpy(ptr, cnt->addr, cnt->count);
+		memcpy(ptr, cnt->addr, cnt->count*unit);
 		free(cnt->addr);
 	}
 

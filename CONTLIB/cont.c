@@ -337,11 +337,10 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	if ( num_of_items > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
 
-
-
-
-	// if ( (unsigned char*)arr - cnt->addr <= count*cnt->capacity )
-	// 	return BUFFER_OVERLAP;
+	uintptr_t cont_addr = (uintptr_t)cnt->addr;
+	uintptr_t cont_end = cont_addr + cnt->capacity*unit;
+	if ( (uintptr_t)arr >= cont_addr && (uintptr_t)arr <= cont_end )
+		return BUFFER_OVERLAP;
 	
 	size_t size_to_copy = num_of_items * unit;
 	size_t last_indx_plus_one = index + num_of_items;
@@ -417,12 +416,12 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	if ( index > count )
 		return INVALID_INDEX;
 
-	// uintptr_t cont_addr = (uintptr_t)cnt->addr;
-	// uintptr_t arr_p = (uintptr_t)(unsigned char*)arr;
 	size_t unit = cnt->unit;
- //
-	// if ( (arr_p >= cont_addr) && (arr_p <= cont_addr + unit*cnt->capacity) )
-	// 	return BUFFER_OVERLAP;
+
+	uintptr_t cont_addr = (uintptr_t)cnt->addr;
+	uintptr_t cont_end = cont_addr + cnt->capacity*unit;
+	if ( (uintptr_t)arr >= cont_addr && (uintptr_t)arr <= cont_end )
+		return BUFFER_OVERLAP;
 
 	if ( count > SIZE_MAX - num_of_items)
 		return SIZE_OVERFLOW;

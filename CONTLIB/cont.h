@@ -8,8 +8,8 @@
 #define NO_LIMIT 0
 #define ALL 0
 
-#define MIN_GF 1.0
-#define MAX_GF 10.0
+#define GF_LOWER_BOUND 1.0
+#define GF_UPPER_BOUND 10.0
 
 enum error_codes
 {

@@ -55,8 +55,10 @@ int cont_is_valid(cont* cnt)
 		return 0;
 
 	if (
-			!( (growth_factor > MIN_GF) && (growth_factor < MAX_GF) ) ||
-			!isfinite(growth_factor)
+		   !(
+				(growth_factor > GF_LOWER_BOUND) &&
+				(growth_factor < GF_UPPER_BOUND)
+			) || !isfinite(growth_factor)
 	   ) return 0;
 
 	if ( !cnt->addr )
@@ -149,7 +151,7 @@ int cont_set_max_capacity(cont* cnt, size_t max_size)
 		}
 		else // cont contains overaligned objects
 		{
-			ptr = aligned_alloc( cnt->alignment, cnt->capacity*unit );
+			ptr = aligned_alloc( cnt->alignment, max_size*unit );
 			if ( !ptr )
 				return REALLOC_FAILURE;
 
@@ -178,9 +180,12 @@ int cont_set_growth_factor(cont* cnt, double growth_factor)
 		return CONT_IS_NULL;
 
 	if (
-			!( (growth_factor > MIN_GF) && (growth_factor < MAX_GF) ) ||
-			!isfinite(growth_factor)
-	   ) return 0;
+		   !(
+				(growth_factor > GF_LOWER_BOUND) &&
+				(growth_factor < GF_UPPER_BOUND)
+			) || !isfinite(growth_factor)
+
+	   ) return INVALID_GROWTH_FACTOR_VALUE;
 		
 	cnt->growth_factor = growth_factor;
 	
@@ -337,10 +342,10 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	if ( num_of_items > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
 
-	uintptr_t cont_addr = (uintptr_t)cnt->addr;
-	uintptr_t cont_end = cont_addr + cnt->capacity*unit;
-	if ( (uintptr_t)arr >= cont_addr && (uintptr_t)arr <= cont_end )
-		return BUFFER_OVERLAP;
+	// uintptr_t cont_addr = (uintptr_t)cnt->addr;
+	// uintptr_t cont_end = cont_addr + cnt->capacity*unit;
+	// if ( (uintptr_t)arr >= cont_addr && (uintptr_t)arr <= cont_end )
+	// 	return BUFFER_OVERLAP;
 	
 	size_t size_to_copy = num_of_items * unit;
 	size_t last_indx_plus_one = index + num_of_items;
@@ -418,10 +423,10 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 
 	size_t unit = cnt->unit;
 
-	uintptr_t cont_addr = (uintptr_t)cnt->addr;
-	uintptr_t cont_end = cont_addr + cnt->capacity*unit;
-	if ( (uintptr_t)arr >= cont_addr && (uintptr_t)arr <= cont_end )
-		return BUFFER_OVERLAP;
+	// uintptr_t cont_addr = (uintptr_t)cnt->addr;
+	// uintptr_t cont_end = cont_addr + cnt->capacity*unit;
+	// if ( (uintptr_t)arr >= cont_addr && (uintptr_t)arr <= cont_end )
+	// 	return BUFFER_OVERLAP;
 
 	if ( count > SIZE_MAX - num_of_items)
 		return SIZE_OVERFLOW;

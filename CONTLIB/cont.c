@@ -354,12 +354,8 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	uintptr_t cont_begin = (uintptr_t)cnt->addr;
 	uintptr_t cont_end = cont_begin + cnt->capacity*unit;
 
-	if
-	(
-		(arr_begin >= cont_begin && arr_begin < cont_end) ||
-		(arr_end >= cont_begin && arr_end < cont_end)
-
-	) return BUFFER_OVERLAP;
+	if ( arr_begin < cont_end && cont_begin < arr_end )
+		return BUFFER_OVERLAP;
 
 	size_t last_indx_plus_one = index + num_of_items;
 	
@@ -453,12 +449,8 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	uintptr_t cont_begin = (uintptr_t)cnt->addr;
 	uintptr_t cont_end = cont_begin + cnt->capacity*unit;
 
-	if
-	(
-		(arr_begin >= cont_begin && arr_begin < cont_end) ||
-		(arr_end >= cont_begin && arr_end < cont_end)
-
-	) return BUFFER_OVERLAP;
+	if ( arr_begin < cont_end && cont_begin < arr_end )
+		return BUFFER_OVERLAP;
 
 	size_t new_count = count + num_of_items;
 		

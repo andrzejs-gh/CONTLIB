@@ -99,7 +99,7 @@ int cont_set_capacity(cont* cnt, size_t capacity)
 		
 	size_t max_capacity = cnt->max_capacity;
 		
-	if ( max_capacity && (capacity > max_capacity) )
+	if ( (max_capacity != NO_LIMIT) && (capacity > max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 	
 	void* ptr;
@@ -188,6 +188,7 @@ int cont_set_growth_factor(cont* cnt, double growth_factor)
 		   !(
 				(growth_factor > GF_LOWER_BOUND) &&
 				(growth_factor < GF_UPPER_BOUND)
+
 			) || !isfinite(growth_factor)
 
 	   ) return INVALID_GROWTH_FACTOR_VALUE;
@@ -205,7 +206,7 @@ void* cont_get(cont* cnt, size_t index)
 	if ( index >= cnt->count )
 		return NULL;
 	else
-		return cnt->addr + ( index*(cnt->unit) );
+		return cnt->addr + (index*(cnt->unit));
 }
 
 int cont_set(cont* cnt, size_t index, void* item)
@@ -215,13 +216,15 @@ int cont_set(cont* cnt, size_t index, void* item)
 
 	if ( index >= cnt->count )
 		return INVALID_INDEX;
-
 	if ( !item )
 		return NULL_ITEM_POINTER;
-	
+
 	size_t unit = cnt->unit;
+
+	if ( item == cnt->addr+(index*unit) ) // if item points to itself
+		return 0;
 	
-	memcpy( cnt->addr + (index*unit), item, unit );
+	memcpy(cnt->addr + (index*unit), item, unit);
 	
 	return 0;
 }
@@ -246,7 +249,7 @@ int cont_cv(cont* cnt, size_t index, void* buffer, size_t n)
 	
 	size_t unit = cnt->unit;
 	
-	memcpy(buffer, cnt->addr + index*unit, n*unit);
+	memmove(buffer, cnt->addr + index*unit, n*unit);
 	
 	return 0;
 }
@@ -257,7 +260,7 @@ void* cont_pop(cont* cnt)
 		return NULL;
 
 	size_t count = cnt->count;
-	if (!count)
+	if ( !count )
 		return NULL;
 	
 	cnt->count--;
@@ -280,6 +283,14 @@ int cont_push(cont* cnt, void* item)
 	
 	size_t unit = cnt->unit;
 	
+	uintptr_t arr_begin = (uintptr_t)item;
+	uintptr_t arr_end = arr_begin + unit;
+	uintptr_t cont_begin = (uintptr_t)cnt->addr;
+	uintptr_t cont_end = cont_begin + cnt->capacity*unit;
+
+	if ( arr_begin < cont_end && cont_begin < arr_end )
+		return BUFFER_OVERLAP;
+
 	if ( count == cnt->capacity )
 	{		 
 		int ret = cont_grow(cnt, count+1);
@@ -287,7 +298,7 @@ int cont_push(cont* cnt, void* item)
 			return ret;
 	}
 	
-	memcpy( cnt->addr + count*unit, item, unit );
+	memcpy(cnt->addr + count*unit, item, unit);
 	cnt->count++;
 	
 	return 0;	
@@ -408,8 +419,8 @@ int cont_insert(cont* cnt, size_t index, void* item)
 	size_t unit = cnt->unit;
 	unsigned char* position = cnt->addr + index*unit;
 	
-	memmove( position+unit, position, (count - index)*unit );
-	memcpy( position, item, unit );
+	memmove(position+unit, position, (count - index)*unit);
+	memcpy(position, item, unit);
 	cnt->count++;
 	
 	return 0;

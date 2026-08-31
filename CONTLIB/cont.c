@@ -113,7 +113,7 @@ int cont_set_capacity(cont* cnt, size_t capacity)
 	{
 		ptr = aligned_alloc(cnt->alignment, capacity*unit);
 		if ( !ptr )
-			return REALLOC_FAILURE;
+			return ALIGNED_ALLOC_FAILURE;
 
 		size_t size_to_copy = (capacity > cnt->count) ? cnt->count : capacity;
 
@@ -156,7 +156,7 @@ int cont_set_max_capacity(cont* cnt, size_t max_size)
 		{
 			ptr = aligned_alloc(cnt->alignment, max_size*unit);
 			if ( !ptr )
-				return REALLOC_FAILURE;
+				return ALIGNED_ALLOC_FAILURE;
 
 			size_t size_to_copy = (max_size > cnt->count) ? cnt->count : max_size;
 
@@ -317,7 +317,17 @@ int cont_push_front(cont* cnt, void* item)
 	
 	if ( (max_capacity != NO_LIMIT) && (count == max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
+
+	size_t unit = cnt->unit;
 	
+	uintptr_t item_begin = (uintptr_t)item;
+	uintptr_t item_end = item_begin + unit;
+	uintptr_t cont_begin = (uintptr_t)cnt->addr;
+	uintptr_t cont_end = cont_begin + cnt->capacity*unit;
+
+	if ( item_begin < cont_end && cont_begin < item_end )
+		return BUFFER_OVERLAP;
+
 	if ( count == cnt->capacity ) // if there is no space
 	{
 		int ret = cont_grow(cnt, count+1);
@@ -325,11 +335,10 @@ int cont_push_front(cont* cnt, void* item)
 			return ret;
 	}
 
-	size_t unit = cnt->unit;
 	unsigned char* addr = cnt->addr;
 	
-	memmove( addr+unit, addr, count*unit );
-	memcpy( addr, item, unit );
+	memmove(addr+unit, addr, count*unit);
+	memcpy(addr, item, unit);
 	
 	cnt->count++;
 	
@@ -358,7 +367,7 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	if ( num_of_items > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
 	
-	size_t size_to_copy = num_of_items * unit;
+	size_t size_to_copy = num_of_items*unit;
 
 	uintptr_t arr_begin = (uintptr_t)arr;
 	uintptr_t arr_end = arr_begin + size_to_copy;
@@ -404,19 +413,26 @@ int cont_insert(cont* cnt, size_t index, void* item)
 	if ( index > count )
 		return INVALID_INDEX;
 		
-	size_t max_capacity = cnt->max_capacity;
-		
-	if ( (max_capacity != NO_LIMIT) && (count == max_capacity) )
+	if ( (cnt->max_capacity != NO_LIMIT) && (count == cnt->max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 	
+	size_t unit = cnt->unit;
+
+	uintptr_t item_begin = (uintptr_t)item;
+	uintptr_t item_end = item_begin + unit;
+	uintptr_t cont_begin = (uintptr_t)cnt->addr;
+	uintptr_t cont_end = cont_begin + cnt->capacity*unit;
+
+	if ( item_begin < cont_end && cont_begin < item_end )
+		return BUFFER_OVERLAP;
+
 	if ( count == cnt->capacity )
 	{
 		int ret = cont_grow(cnt, count+1);
 		if ( ret )  // cont_grow returns and error code
 			return ret;
 	}
-	
-	size_t unit = cnt->unit;
+
 	unsigned char* position = cnt->addr + index*unit;
 	
 	memmove(position+unit, position, (count - index)*unit);
@@ -480,7 +496,7 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 
 	return 0;
 }
-
+// == == = = = = = = =  = == =  == = = = = = = = = = = = = = = == = = = = =
 int cont_append(cont* cnt, void* arr, size_t n)
 {
 	return cont_write(cnt, cnt->count, arr, n);
@@ -525,7 +541,7 @@ int cont_set_space(cont* cnt, size_t n)
 	{
 		ptr = aligned_alloc(cnt->alignment, new_capacity*unit);
 		if ( !ptr )
-			return REALLOC_FAILURE;
+			return ALIGNED_ALLOC_FAILURE;
 
 		memcpy(ptr, cnt->addr, count*unit);
 		free(cnt->addr);
@@ -654,7 +670,7 @@ int cont_set_blank(cont* cnt, size_t position, size_t n)
 	
 	size_t unit = cnt->unit;
 	
-	memset( (cnt->addr + position*unit), 0, n*unit );
+	memset((cnt->addr + position*unit), 0, n*unit);
 	return 0;
 }
 
@@ -850,7 +866,7 @@ int cont_grow(cont* cnt, size_t required_capacity)
 	else // cont cantains overaligned objects
 	{
 		ptr = aligned_alloc(cnt->alignment, final_capacity_*unit);
-		if ( !ptr ) return REALLOC_FAILURE;
+		if ( !ptr ) return ALIGNED_ALLOC_FAILURE;
 
 		memcpy(ptr, cnt->addr, cnt->count*unit);
 		free(cnt->addr);

@@ -3,13 +3,13 @@
 
 #include <stddef.h>
 
-#define c_UNIT_BUFF_SIZE 256
+#define cont_UNIT_BUFF_SIZE 256
 
-#define c_NO_LIMIT 0
-#define c_ALL 0
+#define cont_NO_LIMIT 0
+#define cont_ALL 0
 
-#define GF_LOWER_BOUND 1.0
-#define GF_UPPER_BOUND 10.0
+#define cont_GF_LBOUND 1.0
+#define cont_GF_UBOUND 10.0
 
 #define cont_NEW(capacity, type) 						  \
 		cont_new(capacity, sizeof(type), _Alignof(type))

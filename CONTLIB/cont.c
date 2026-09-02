@@ -56,8 +56,8 @@ int cont_is_valid(cont* cnt)
 
 	if (
 		   !(
-				(growth_factor > GF_LOWER_BOUND) &&
-				(growth_factor < GF_UPPER_BOUND)
+				(growth_factor > cont_GF_LBOUND) &&
+				(growth_factor < cont_GF_UBOUND)
 			) || !isfinite(growth_factor)
 
 	   ) return 0;
@@ -102,7 +102,7 @@ int cont_set_capacity(cont* cnt, size_t capacity)
 		
 	size_t max_capacity = cnt->max_capacity;
 		
-	if ( (max_capacity != c_NO_LIMIT) && (capacity > max_capacity) )
+	if ( (max_capacity != cont_NO_LIMIT) && (capacity > max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 	
 	void* ptr;
@@ -143,9 +143,9 @@ int cont_set_max_capacity(cont* cnt, size_t max_size)
 	if ( max_size > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
 	
-	if ( max_size == c_NO_LIMIT )
+	if ( max_size == cont_NO_LIMIT )
 	{
-		cnt->max_capacity = c_NO_LIMIT;
+		cnt->max_capacity = cont_NO_LIMIT;
 	}
 	else if ( cnt->count > max_size || cnt->capacity > max_size )
 	{
@@ -190,8 +190,8 @@ int cont_set_growth_factor(cont* cnt, double growth_factor)
 
 	if (
 		   !(
-				(growth_factor > GF_LOWER_BOUND) &&
-				(growth_factor < GF_UPPER_BOUND)
+				(growth_factor > cont_GF_LBOUND) &&
+				(growth_factor < cont_GF_UBOUND)
 
 			) || !isfinite(growth_factor)
 
@@ -246,7 +246,7 @@ int cont_cv(cont* cnt, size_t index, void* buffer, size_t n)
 	if ( index >= count )
 		return INVALID_INDEX;
 	
-	if ( n == c_ALL )
+	if ( n == cont_ALL )
 		n = count - index;
 	else if (n > count - index)
 		return INVALID_RANGE;
@@ -282,7 +282,7 @@ int cont_push(cont* cnt, void* item)
 	size_t count = cnt->count;
 	size_t max_capacity = cnt->max_capacity;
 
-	if ( (max_capacity != c_NO_LIMIT) && (count == max_capacity) )
+	if ( (max_capacity != cont_NO_LIMIT) && (count == max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 	
 	size_t unit = cnt->unit;
@@ -319,7 +319,7 @@ int cont_push_front(cont* cnt, void* item)
 	size_t count = cnt->count;
 	size_t max_capacity = cnt->max_capacity;
 	
-	if ( (max_capacity != c_NO_LIMIT) && (count == max_capacity) )
+	if ( (max_capacity != cont_NO_LIMIT) && (count == max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 
 	size_t unit = cnt->unit;
@@ -386,7 +386,7 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	if ( last_indx_plus_one > cnt->capacity )
 	{
 		size_t max_capacity = cnt->max_capacity;
-		if ( (max_capacity != c_NO_LIMIT) && (last_indx_plus_one > max_capacity) )
+		if ( (max_capacity != cont_NO_LIMIT) && (last_indx_plus_one > max_capacity) )
 			return MAX_CAPACITY_EXCEEDED;
 			
 		int ret = cont_grow(cnt, last_indx_plus_one);
@@ -417,7 +417,7 @@ int cont_insert(cont* cnt, size_t index, void* item)
 	if ( index > count )
 		return INVALID_INDEX;
 		
-	if ( (cnt->max_capacity != c_NO_LIMIT) && (count == cnt->max_capacity) )
+	if ( (cnt->max_capacity != cont_NO_LIMIT) && (count == cnt->max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 	
 	size_t unit = cnt->unit;
@@ -468,7 +468,7 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	
 	size_t max_capacity = cnt->max_capacity;
 
-	if ( (max_capacity != c_NO_LIMIT) && (count + num_of_items > max_capacity) )
+	if ( (max_capacity != cont_NO_LIMIT) && (count + num_of_items > max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 	if ( num_of_items > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
@@ -526,7 +526,7 @@ int cont_set_space(cont* cnt, size_t n)
 	size_t new_capacity = count + n;
 	size_t max_capacity = cnt->max_capacity;
 		
-	if ( (max_capacity != c_NO_LIMIT) && (new_capacity > max_capacity) )
+	if ( (max_capacity != cont_NO_LIMIT) && (new_capacity > max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 		
 	size_t unit = cnt->unit;
@@ -590,7 +590,7 @@ int cont_remove_range(cont* cnt, size_t index, size_t n)
 	if ( index >= count )
 		return INVALID_INDEX;
 	
-	if ( n == c_ALL )
+	if ( n == cont_ALL )
 		n = count - index;
 	else if ( n > count - index )
 		return INVALID_RANGE;
@@ -621,10 +621,10 @@ int cont_reverse(cont* cnt)
 	
 	unsigned char* front = cnt->addr;
 	unsigned char* back = cnt->addr + (count-1)*unit;
-	unsigned char stack_buffer[c_UNIT_BUFF_SIZE];
+	unsigned char stack_buffer[cont_UNIT_BUFF_SIZE];
 	unsigned char* buffer;
 	
-	if ( unit <= c_UNIT_BUFF_SIZE )
+	if ( unit <= cont_UNIT_BUFF_SIZE )
 		buffer = stack_buffer;
 	else
 	{
@@ -667,7 +667,7 @@ int cont_set_blank(cont* cnt, size_t position, size_t n)
 	if ( position >= capacity )
 		return INVALID_INDEX;
 	
-	if ( n == c_ALL )
+	if ( n == cont_ALL )
 		n = capacity - position;
 	else if ( n > capacity - position )
 		return INVALID_RANGE;
@@ -800,7 +800,7 @@ cont cont_sub(cont* cnt, size_t index, size_t n_elements)
 	if ( index >= count )
 		return INVALID_CONT;
 
-	if ( n_elements == c_ALL )
+	if ( n_elements == cont_ALL )
 		n_elements = count - index;
 	else if ( n_elements > count - index )
 		return INVALID_CONT;
@@ -825,7 +825,7 @@ cont cont_sub(cont* cnt, size_t index, size_t n_elements)
 	cont sub_cont = *cnt;
 	sub_cont.count = n_elements;
 	sub_cont.capacity = n_elements;
-	sub_cont.max_capacity = c_NO_LIMIT;
+	sub_cont.max_capacity = cont_NO_LIMIT;
 	sub_cont.addr = sub_cont_addr;
 
 	return sub_cont;
@@ -854,7 +854,7 @@ int cont_grow(cont* cnt, size_t required_capacity)
 		
 	size_t max_capacity = cnt->max_capacity;
 	
-	if ( (max_capacity != c_NO_LIMIT) && (final_capacity_ > max_capacity) )
+	if ( (max_capacity != cont_NO_LIMIT) && (final_capacity_ > max_capacity) )
 		final_capacity_ = max_capacity;
 		
 	size_t unit = cnt->unit;

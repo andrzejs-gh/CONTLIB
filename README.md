@@ -9,57 +9,38 @@
 ---
 
 ## Overview
-CONTILB provides **cont** objects - generic dynamic containers for storing elements of arbitrary size.
+CONTILB provides **cont** objects - generic dynamic data containers for storing elements of arbitrary size and alignment.
 
 **cont** struct (non-opaque):
 ```c
 typedef struct
 {
-    size_t unit;          // size of the element 
-    size_t count;         // number of elements
+    size_t unit;          // size of the item 
+    size_t alignment      // item alignment
+    size_t count;         // number of items
     size_t capacity;      // capacity (>= 1)
     size_t max_capacity;  // max capacity (0 for unlimited or any value >= 1)
     double growth_factor; // growth factor in the range (1.0 ; 10.0]
     unsigned char* addr;  // pointer to allocated memory
-    cont_methods* m;      // pointer to method vtable
 } cont;
 ```
-**INVALID_CONT** constant:
-```c
-const cont INVALID_CONT = {
-    .unit = 0,
-    .count = 0,
-	.capacity = 0,
-	.max_capacity = 0,
-	.growth_factor = 0.0,
-	.addr = NULL,
-	.m = &invalid_cont_methods
-};
-```
-**cont** methods (see: [full method list](#full-method-list)) can be called directly as specified in the prototypes below, or via the vtable. Direct calls involve full function names with the prefix *'cont_...'*, while indirect calls omit that prefix. Example:
-```c
-cont_set(&cnt, i, &item);
-```
-vs
-```c
-cnt.m->set(&cnt, i, &item);
-```
-
-Properly freed **cont** becomes **INVALID_CONT**. While it is safe to call methods via indirect calls on **INVALID_CONT** (the return values are either CONT_IS_INVALID, CONT_ALREADY_FREED error codes, NULL pointer, or INVALID_CONT - because the vtable is swaped), safety is not guaranteed in the case of direct calls and it is generaly recomended to check if a **cont** is valid via:
-```c
-cont_is_valid(&cnt);
-```
-```c
-cnt.m->is_valid(&cnt);
-```
-1 - valid, 0 - invalid.
-It detects not only if a **cont** is the INVALID_CONT, but also if **cont**'s fields have invalid values.
 
 A **cont** has the capacity of at least 1 unit. Initial value is specified upon instantiation. 
 
 Maximum capacity can be set to any value equal to or greater than 1, or to 0 which defines ***unlimited***. The default value is unlimited capacity.
 
 Growth factor can be set to any value greater than 1.0 and less than or equal to 10.0. The default value is 2.0. If the capacity is full and new element(s) need to be added, the **cont** grows geometricaly acording to the formula: capacity *= growth_factor until sufficient capacity is reached or maximum capacity is reached.
+
+
+
+**INVALID_CONT** constant:
+```c
+const cont INVALID_CONT = (cont){0};
+```
+
+Properly freed **cont** becomes **INVALID_CONT**.
+
+
 
 <p align="right">
 <a href="#table-of-contents">GO TO TOP ^</a>

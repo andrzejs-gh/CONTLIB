@@ -116,6 +116,7 @@ int cont_set_capacity(cont* cnt, size_t capacity)
 			return ALIGNED_ALLOC_FAILURE;
 
 		size_t size_to_copy = (capacity > cnt->count) ? cnt->count : capacity;
+			   size_to_copy *= unit;
 
 		memcpy(ptr, cnt->addr, size_to_copy);
 		free(cnt->addr);

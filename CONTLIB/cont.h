@@ -11,6 +11,12 @@
 #define GF_LOWER_BOUND 1.0
 #define GF_UPPER_BOUND 10.0
 
+#define cont_NEW(capacity, type) 						  \
+		cont_new(capacity, sizeof(type), _Alignof(type))
+
+#define cont_ITEM(cnt, index, type) 					  \
+				 ((type*)cnt->addr)[index]
+
 enum error_codes
 {
 	INVALID_INDEX = 1,

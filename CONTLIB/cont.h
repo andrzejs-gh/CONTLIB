@@ -11,7 +11,7 @@
 #define cont_GF_LBOUND 1.0
 #define cont_GF_UBOUND 10.0
 
-#define cont_NEW(capacity, type) 						  \
+#define cont_NEW(type, capacity) 						  \
 		cont_new(capacity, sizeof(type), _Alignof(type))
 
 #define cont_ITEM(cnt, index, type) 					  \

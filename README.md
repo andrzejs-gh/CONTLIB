@@ -26,9 +26,12 @@ typedef struct
 ```
 The struct is intentionaly made non-opaque so the fields can be manually manipulated to bypass API overhead if needed.
 
-A **cont** has the capacity of at least 1 unit. Initial value is specified upon instantiation. 
+When creating a new **cont** (see [Creation and destruction](#creation-and-destruction)), you specify the type and the initial capacity - which is the memory that the **cont** will allocate equal to 
+```c
+capacity * sizeof(type)
+```
 
-Maximum capacity can be set to any value equal to or greater than 1, or to 0 which defines ***unlimited**. The default value is **unlimited**. You can use the macro:
+Maximum capacity can be set to any value equal to or greater than `1`, or to `0`, which defines ***unlimited**. The default value is **unlimited**. You can use the macro:
 ```c
 // cont.h
 
@@ -43,12 +46,18 @@ Growth factor can be set to any value between:
 #define cont_GF_LBOUND 1.0
 #define cont_GF_UBOUND 10.0
 ```
-The default value is 2.0. 
+the default value is `2.0`. 
 
-If the capacity is full and new element(s) need to be added, the **cont** grows geometricaly acording to the formula: ```capacity *= growth_factor``` untill sufficient capacity is reached or maximum capacity is reached.
-
-Properly freed **cont** becomes **INVALID_CONT**:
+When the capacity is full and new element(s) need to be added, the **cont** grows geometricaly acording to the formula: 
 ```c
+capacity *= growth_factor
+``` 
+untill sufficient capacity is reached or **maximum capacity** is reached.
+
+Freeing a **cont** releases its buffer and invalidates it, making it an **INVALID_CONT**, which is defined as:
+```c
+// cont.c
+
 const cont INVALID_CONT = (cont){0};
 ```
 
@@ -62,7 +71,8 @@ const cont INVALID_CONT = (cont){0};
 
 ### Creation and destruction
 
-- [cont_new](#-cont_new-)
+- [cont_NEW](#-cont_new-)
+- [cont_new](#-cont_new--1)
 - [cont_free](#-cont_free-)
 
 ### Validation
@@ -78,6 +88,7 @@ const cont INVALID_CONT = (cont){0};
 
 ### Getting elements
 
+- [cot_ITEM](#-cont_item-)
 - [cont_get](#-cont_get-)
 - [cont_pop](#-cont_pop-)
 - [cont_cv](#-cont_cv-)
@@ -87,6 +98,7 @@ const cont INVALID_CONT = (cont){0};
 
 ### Adding and modifying elements
 
+- [cont_ITEM](#-cont_item--1)
 - [cont_set](#-cont_set-)
 - [cont_push](#-cont_push-)
 - [cont_push_front](#-cont_push_front-)
@@ -120,20 +132,41 @@ const cont INVALID_CONT = (cont){0};
 
 ## Creation and destruction
 
+### ** **cont_NEW** **
+
+```c
+cont_NEW(type, capacity);
+```
+
+Macro wrapper around [cont_new](#-cont_new-) for the ease of use.
+Creates a new **cont** instance and returns it by value.
+The `capacity` must be greater than `0`.
+
+* **Return (success):** 
+
+  * New container instance
+  
+* **Return (failure):** 
+
+  * `INVALID_CONT` - `(!capacity || capacity > SIZE_MAX / unit)` or malloc failure
+
+<p align="right">
+<a href="#full-method-list">GO TO METHOD LIST ^</a>
+</p>
+  
+---
+
 ### ** **cont_new** **
 
 ```c
-cont cont_new(size_t capacity, size_t unit);
+cont cont_new(size_t capacity, size_t unit, size_t alignment);
 ```
 
-*Indirect call:*
-
-```c
-// no indirect call
-```
-
-Creates new container instance with the given capacity and element size.
-Both `capacity` and `unit` must be greater than 0.
+Creates a new **cont** instance and returns it by value.
+- `capacity` argument must be greater than `0`. 
+- `unit` argument should be `sizeof(type)`
+- `alignment` argument should be `_Alignof(type)`
+It's easier to use [cont_NEW](#-cont_new-) and leave this function for internal usage.
 
 * **Return (success):** 
 
@@ -155,13 +188,7 @@ Both `capacity` and `unit` must be greater than 0.
 int cont_free(cont* cont_);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->free(&cnt);
-```
-
-Frees memory allocated by the container and turns it into INVALID_CONT.
+Frees the buffer allocated by the container and turns it into an `INVALID_CONT`.
 
 * **Return (success):** 
 
@@ -185,13 +212,7 @@ Frees memory allocated by the container and turns it into INVALID_CONT.
 int cont_is_valid(cont* cont_);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->is_valid(&cnt);
-```
-
-Validates the container. It detects not only if the container is INVALID_CONT, but also if its fields have valid values.
+Validates a container. It detects not only if a container is `INVALID_CONT`, but also if the fields have valid values.
 
 * **Return (success):** 
 
@@ -213,12 +234,6 @@ Validates the container. It detects not only if the container is INVALID_CONT, b
 
 ```c
 int cont_set_count(cont* cont_, size_t count);
-```
-
-*Indirect call:*
-
-```c
-cnt.m->set_count(&cnt, count);
 ```
 
 Sets the number of elements (`.count`).
@@ -329,6 +344,27 @@ Sets growth factor. Valid range 1.0 < factor ≤ 10.0.
 ---
 
 ## Getting Elements
+
+### ** **cont_ITEM** **
+
+```c
+cont_ITEM(cont_ptr, index, type);
+```
+
+Special macro for bypassing API and getting straight to the element at a given index:
+```c
+// cont.h
+
+#define cont_ITEM(cnt, index, type) 					  \
+                ((type*)cnt->addr)[index]
+```
+No safety mechanisms, use with caution.
+
+<p align="right">
+<a href="#full-method-list">GO TO METHOD LIST ^</a>
+</p>
+  
+---
 
 ### ** **cont_get** **
 
@@ -504,6 +540,27 @@ Returns an exact copy of the container. If malloc fails, it returns INVALID_CONT
 ---
 
 ## Adding elements / setting values
+
+### ** **cont_ITEM** **
+
+```c
+cont_ITEM(cont_ptr, index, type);
+```
+
+Special macro for bypassing API and getting straight to the element at a given index:
+```c
+// cont.h
+
+#define cont_ITEM(cnt, index, type) 					  \
+                ((type*)cnt->addr)[index]
+```
+No safety mechanisms, use with caution.
+
+<p align="right">
+<a href="#full-method-list">GO TO METHOD LIST ^</a>
+</p>
+  
+---
 
 ### ** **cont_set** **
 

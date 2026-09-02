@@ -69,7 +69,7 @@ int cont_prepend(cont* cnt, void* arr, size_t n);
 int cont_set_space(cont* cnt, size_t n);
 int cont_shrink(cont* cnt);
 int cont_remove(cont* cnt, size_t index);
-int cont_cut(cont* cnt, size_t index, size_t n);
+int cont_remove_range(cont* cnt, size_t index, size_t n);
 int cont_reverse(cont* cnt);
 int cont_clear(cont* cnt);
 int cont_set_blank(cont* cnt, size_t position, size_t n);

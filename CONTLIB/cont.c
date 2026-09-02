@@ -463,7 +463,7 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 		return SIZE_OVERFLOW;
 	
 	size_t max_capacity = cnt->max_capacity;
-	
+
 	if ( (max_capacity != NO_LIMIT) && (count + num_of_items > max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 	if ( num_of_items > SIZE_MAX / unit )
@@ -496,7 +496,7 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 
 	return 0;
 }
-// == == = = = = = = =  = == =  == = = = = = = = = = = = = = = == = = = = =
+
 int cont_append(cont* cnt, void* arr, size_t n)
 {
 	return cont_write(cnt, cnt->count, arr, n);
@@ -576,7 +576,7 @@ int cont_remove(cont* cnt, size_t index)
 	return 0;
 }
 
-int cont_cut(cont* cnt, size_t index, size_t n)
+int cont_remove_range(cont* cnt, size_t index, size_t n)
 {
 	if ( !cnt )
 		return CONT_IS_NULL;

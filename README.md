@@ -9,7 +9,7 @@
 ---
 
 ## Overview
-CONTILB provides **cont** objects - generic dynamic data containers for storing elements of arbitrary size and alignment.
+CONTILB provides **cont** objects - generic and dynamic data containers for storing elements of arbitrary size and alignment.
 
 **cont** struct (non-opaque):
 ```c
@@ -24,23 +24,33 @@ typedef struct
     unsigned char* addr;  // pointer to allocated memory
 } cont;
 ```
+The struct is intentionaly made non-opaque so the fields can be manually manipulated to bypass API overhead if needed.
 
 A **cont** has the capacity of at least 1 unit. Initial value is specified upon instantiation. 
 
-Maximum capacity can be set to any value equal to or greater than 1, or to 0 which defines ***unlimited***. The default value is unlimited capacity.
+Maximum capacity can be set to any value equal to or greater than 1, or to 0 which defines ***unlimited**. The default value is **unlimited**. You can use the macro:
+```c
+// cont.h
 
-Growth factor can be set to any value greater than 1.0 and less than or equal to 10.0. The default value is 2.0. If the capacity is full and new element(s) need to be added, the **cont** grows geometricaly acording to the formula: capacity *= growth_factor until sufficient capacity is reached or maximum capacity is reached.
+#define cont_NO_LIMIT 0
+```
+for better readability.
 
+Growth factor can be set to any value between:
+```c
+// cont.h
 
+#define cont_GF_LBOUND 1.0
+#define cont_GF_UBOUND 10.0
+```
+The default value is 2.0. 
 
-**INVALID_CONT** constant:
+If the capacity is full and new element(s) need to be added, the **cont** grows geometricaly acording to the formula: ```capacity *= growth_factor``` untill sufficient capacity is reached or maximum capacity is reached.
+
+Properly freed **cont** becomes **INVALID_CONT**:
 ```c
 const cont INVALID_CONT = (cont){0};
 ```
-
-Properly freed **cont** becomes **INVALID_CONT**.
-
-
 
 <p align="right">
 <a href="#table-of-contents">GO TO TOP ^</a>

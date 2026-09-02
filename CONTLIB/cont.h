@@ -3,10 +3,10 @@
 
 #include <stddef.h>
 
-#define CONTLIB_UNIT_BUFF_SIZE 256
+#define c_UNIT_BUFF_SIZE 256
 
-#define NO_LIMIT 0
-#define ALL 0
+#define c_NO_LIMIT 0
+#define c_ALL 0
 
 #define GF_LOWER_BOUND 1.0
 #define GF_UPPER_BOUND 10.0

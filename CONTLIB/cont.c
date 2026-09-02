@@ -73,8 +73,11 @@ int cont_set_count(cont* cnt, size_t count)
 	if ( !cnt )
 		return CONT_IS_NULL;
 
-	if ( count > cnt->count )
-		return COUNT_LARGER_THAN_CURRENT_COUNT;
+	if ( count > cnt->capacity )
+	{
+		int ret = cont_grow(cnt, count);
+		if ( !ret ) return ret;
+	}
 	
 	cnt->count = count;
 	
@@ -773,7 +776,7 @@ cont cont_split(cont* cnt, size_t index)
 		return INVALID_CONT;
 
 	memcpy(new_addr, cnt->addr+(index*unit), new_cont_size);
-	if (cont_set_capacity(cnt, index)) // if cnt trimming fails
+	if ( cont_set_capacity(cnt, index) ) // if cnt trimming fails
 	{
 		free(new_addr);
 		return INVALID_CONT;

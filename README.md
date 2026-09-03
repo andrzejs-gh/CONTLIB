@@ -410,7 +410,7 @@ int cont_cv(cont* cnt, size_t index, void* buffer, size_t n);
 ```
 
 Copies `n` elements into a given `buffer` starting at `index`.
-Passing `n == 0` / `cont_ALL` results in copying all elements from `index` to the end of a container. Can be used to copy internally inside a container, if `.capacity` is too small to acomodate the elements that stick out, [cont_grow](#-cont_grow-) is called to make a room.
+Passing `n == 0` / `n == cont_ALL` results in copying all elements from `index` to the end of a container. Can be used to copy internally inside a container, if `.capacity` is too small to acomodate the elements that stick out, [cont_grow](#-cont_grow-) is called to make a room.
 
 * **Return (success):** 
 
@@ -445,7 +445,7 @@ If the index is invalid or if memory allocation/reallocation fails, it returns `
 
 * **Return (failure):** 
   
-  * `INVALID_CONT` - (`cnt == NULL`), (`index == 0 || index >= .count`), malloc/realloc/aligned alloc failure
+  * `INVALID_CONT` - `(cnt == NULL)`, `(index == 0 || index >= .count)`, malloc/realloc/aligned alloc failure
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -459,14 +459,8 @@ If the index is invalid or if memory allocation/reallocation fails, it returns `
 cont cont_sub(cont* cnt, size_t index, size_t n);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->sub(&cnt, i, n);
-```
-
 Returns a subcontainer with n elements starting at a given index without modifying the original.
-Passing n == 0 results in taking all elements from the index to the end.
+Passing `n == 0` / `n == cont_ALL` results in taking all elements from the index to the end.
 
 * **Return (success):** 
 
@@ -474,7 +468,7 @@ Passing n == 0 results in taking all elements from the index to the end.
 
 * **Return (failure):** 
   
-  * `INVALID_CONT` - `(index >= .count)`, `(n > .count - index)`, malloc failure
+  * `INVALID_CONT` - `(cnt == NULL)`, `(index >= .count)`, `(n > .count - index)`, malloc/aligned alloc failure
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -488,13 +482,7 @@ Passing n == 0 results in taking all elements from the index to the end.
 cont cont_clone(cont* cont_);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->clone(&cnt);
-```
-
-Returns an exact copy of the container. If malloc fails, it returns INVALID_CONT.
+Returns an exact copy of the container. On failure, it returns `INVALID_CONT`.
 
 * **Return (success):** 
 
@@ -502,7 +490,7 @@ Returns an exact copy of the container. If malloc fails, it returns INVALID_CONT
 
 * **Return (failure):** 
 
-  * `INVALID_CONT` - malloc failure
+  * `INVALID_CONT` - `(cnt == NULL)`, malloc/aligned alloc failure
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -539,12 +527,6 @@ No safety mechanisms, use with caution.
 int cont_set(cont* cnt, size_t index, void* item);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->set(&cnt, i, &item);
-```
-
 Sets the value of an element at a given index. 
 
 * **Return (success):** 
@@ -553,8 +535,9 @@ Sets the value of an element at a given index.
 
 * **Return (failure):**
 
+  * `CONT_IS_NULL` - `(cnt == NULL)`
   * `INVALID_INDEX` - `(index >= .count)`
-  * `NULL_ITEM_POINTER` - `(!item)`
+  * `NULL_ITEM_POINTER` - `(item == NULL)`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>

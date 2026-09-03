@@ -76,7 +76,7 @@ int cont_set_count(cont* cnt, size_t count)
 	if ( count > cnt->capacity )
 	{
 		int ret = cont_grow(cnt, count);
-		if ( !ret ) return ret;
+		if ( ret ) return ret;
 	}
 	
 	cnt->count = count;
@@ -263,7 +263,7 @@ int cont_cv(cont* cnt, size_t index, void* buffer, size_t n)
 		size_t elements_that_stick_out = (buff_end - cont_end) / n;
 
 		int ret = cont_grow(cnt, (cnt->capacity+elements_that_stick_out));
-		if ( !ret ) return ret;
+		if ( ret ) return ret;
 	}
 
 	memmove(buffer, (cnt->addr+index*unit), n*unit);

@@ -4,7 +4,7 @@
 
 - [Overview](#overview)
 - [Full method list](#full-method-list)
-- [Error codes and displaying container information](#error-codes-and-displaying-container-information)
+- [Error codes](#error-codes)
 
 ---
 
@@ -972,8 +972,8 @@ Reverses the order of elements in a container.
 int cont_set_blank(cont* cnt, size_t position, size_t n);
 ```
 
-Sets n bytes to '\0' starting at the specified position. The range: `position + n` must be within the container’s capacity.
-If n == 0, all bytes from the specified position to the end of the capacity are '\0'ed.
+Sets `n` bytes to 0 starting at a specified position. The range: `position + n` must be within the container’s buffer.
+If `n == 0`, all bytes from the specified position to the end of the buffer are 0'ed.
 
 * **Return (success):** 
 
@@ -981,6 +981,7 @@ If n == 0, all bytes from the specified position to the end of the capacity are 
 
 * **Return (failure):**
 
+  * `CONT_IS_NULL` - `(cnt == NULL)`
   * `INVALID_INDEX` - `(position >= .capacity)`
   * `INVALID_RANGE` - `(n > .capacity - position)`
 
@@ -990,7 +991,7 @@ If n == 0, all bytes from the specified position to the end of the capacity are 
   
 ---
 
-## Error codes and displaying container information
+## Error codes
 
 Full list of error codes from cont.h:
 
@@ -1004,29 +1005,21 @@ enum error_codes
 	NULL_ARRAY_POINTER,
 	REALLOC_FAILURE,
 	MALLOC_FAILURE,
+	ALIGNED_ALLOC_FAILURE,
 	NULL_ITEM_POINTER,
 	NULL_ELEMENT_COUNT,
 	NULL_CAPACITY,
 	MAX_CAPACITY_EXCEEDED,
-	COUNT_LARGER_THAN_CURRENT_COUNT,
 	INVALID_GROWTH_FACTOR_VALUE,
 	CONT_ALREADY_FREED,
 	EMPTY_CONT,
 	UNIT_MISMATCH,
 	SAME_CONT,
 	INVALID_RANGE,
-	CONT_IS_INVALID
+	CONT_IS_INVALID,
+	CONT_IS_NULL,
+	BUFFER_OVERLAP
 };
-```
-
-To display the error name or cont information, use the functions from cont_info.c (make sure to include cont_info.h):
-
-```c
-void print_cont_err(int code)
-```
-
-```c
-void cont_info(cont* cnt)
 ```
 
 <p align="right">

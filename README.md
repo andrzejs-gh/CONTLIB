@@ -166,6 +166,7 @@ Creates a new **cont** instance and returns it by value.
 - `capacity` argument must be greater than `0`. 
 - `unit` argument should be `sizeof(type)`
 - `alignment` argument should be `_Alignof(type)`
+
 It's easier to use [cont_NEW](#-cont_new-) and leave this function for internal usage.
 
 * **Return (success):** 
@@ -188,7 +189,7 @@ It's easier to use [cont_NEW](#-cont_new-) and leave this function for internal 
 int cont_free(cont* cnt);
 ```
 
-Frees the buffer allocated by the container and turns it into an `INVALID_CONT`.
+Frees the buffer allocated by a container and turns the container into an `INVALID_CONT`.
 
 * **Return (success):** 
 
@@ -196,6 +197,7 @@ Frees the buffer allocated by the container and turns it into an `INVALID_CONT`.
   
 * **Return (failure):** 
   
+  * `CONT_IS_NULL` - `(cnt == NULL)`
   * `CONT_ALREADY_FREED` - `(!.addr)`
 
 <p align="right">
@@ -244,7 +246,7 @@ Sets container count. If the passed number exceeds `.capacity`, [cont_grow](#-co
 
 * **Return (failure):** 
   
-  * `CONT_IS_NULL` (`cnt == NULL`)
+  * `CONT_IS_NULL` - `(cnt == NULL)`
   * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
@@ -365,7 +367,7 @@ No safety mechanisms, use with caution.
 void* cont_get(cont* cnt, size_t index);
 ```
 
-Returns pointer to the element at a given index. If index is invalid, it returns NULL.
+Returns pointer to the element at a given index. If index is invalid, it returns `NULL`.
 
 * **Return (success):** 
 
@@ -410,7 +412,7 @@ int cont_cv(cont* cnt, size_t index, void* buffer, size_t n);
 ```
 
 Copies `n` elements into a given `buffer` starting at `index`.
-Passing `n == 0` / `n == cont_ALL` results in copying all elements from `index` to the end of a container. Can be used to copy internally inside a container, if `.capacity` is too small to acomodate the elements that stick out, [cont_grow](#-cont_grow-) is called to make a room.
+Passing `n == 0` / `n == cont_ALL` results in copying all elements from `index` to the end of a container. Passed `buffer` cannot overlap with container's buffer.
 
 * **Return (success):** 
 
@@ -422,7 +424,7 @@ Passing `n == 0` / `n == cont_ALL` results in copying all elements from `index` 
   * `NULL_ARRAY_POINTER` - (`buffer == NULL`)
   * `INVALID_INDEX` - (`index >= .count`)
   * `INVALID_RANGE` - (`n > .count - index`)
-  * [cont_grow](#-cont_grow-) error codes
+  * `BUFFER_OVERLAP`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>

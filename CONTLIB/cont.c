@@ -258,15 +258,10 @@ int cont_cv(cont* cnt, size_t index, void* buffer, size_t n)
 	uintptr_t cont_begin = (uintptr_t)cnt->addr;
 	uintptr_t cont_end = cont_begin + cnt->capacity*unit;
 
-	if ( (buff_begin < cont_end && cont_begin < buff_end) && (buff_end > cont_end) )
-	{
-		size_t elements_that_stick_out = (buff_end - cont_end) / n;
+	if ( buff_begin < cont_end && cont_begin < buff_end )
+		return BUFFER_OVERLAP;
 
-		int ret = cont_grow(cnt, (cnt->capacity+elements_that_stick_out));
-		if ( ret ) return ret;
-	}
-
-	memmove(buffer, (cnt->addr+index*unit), n*unit);
+	memcpy(buffer, (cnt->addr+index*unit), n*unit);
 	
 	return 0;
 }

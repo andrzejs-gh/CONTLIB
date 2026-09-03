@@ -26,7 +26,7 @@ typedef struct
 ```
 The struct is intentionaly made non-opaque so the fields can be manually manipulated to bypass API overhead if needed.
 
-When creating a new **cont** (see [Creation and destruction](#creation-and-destruction)), you specify the type and the initial capacity - which is the memory that the **cont** will allocate equal to 
+When creating a new **cont** (see [Creation and destruction](#creation-and-destruction), [cont_NEW](#-cont_new-)), you specify the type and the initial capacity - which is the memory that the **cont** will allocate equal to 
 ```c
 capacity * sizeof(type)
 ```
@@ -212,7 +212,7 @@ Frees the buffer allocated by the container and turns it into an `INVALID_CONT`.
 int cont_is_valid(cont* cont_);
 ```
 
-Validates a container. It detects not only if a container is `INVALID_CONT`, but also if the fields have valid values.
+Validates container fields.
 
 * **Return (success):** 
 
@@ -233,11 +233,10 @@ Validates a container. It detects not only if a container is `INVALID_CONT`, but
 ### ** **cont_set_count** **
 
 ```c
-int cont_set_count(cont* cont_, size_t count);
+int cont_set_count(cont* cnt, size_t count);
 ```
 
-Sets the number of elements (`.count`).
-Only decreasing the count i allowed.
+Sets container count. If the passed number exceeds `.capacity`, [cont_grow](#-cont_grow-) is called.
 
 * **Return (success):** 
 
@@ -245,7 +244,8 @@ Only decreasing the count i allowed.
 
 * **Return (failure):** 
   
-  * `COUNT_LARGER_THAN_CURRENT_COUNT` - `(count > .count)`
+  * `CONT_IS_NULL` (`cnt == NULL`)
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -256,17 +256,11 @@ Only decreasing the count i allowed.
 ### ** **cont_set_capacity** **
 
 ```c
-int cont_set_capacity(cont* cont_, size_t capacity);
-```
-
-*Indirect call:*
-
-```c
-cnt.m->set_capacity(&cnt, capacity);
+int cont_set_capacity(cont* cnt, size_t capacity);
 ```
 
 Sets container capacity (`.capacity`).
-Shrinking will truncate elements that stick out.
+Shrinking below the current value will truncate elements that stick out.
 
 * **Return (success):** 
 
@@ -274,10 +268,12 @@ Shrinking will truncate elements that stick out.
 
 * **Return (failure):**
 
-  * `NULL_CAPACITY` - `(!capacity)`
+  * `CONT_IS_NULL` (`cnt == NULL`)
+  * `NULL_CAPACITY` - `(capacity == 0)`
   * `SIZE_OVERFLOW` - `(capacity > SIZE_MAX / .unit)`
-  * `MAX_CAPACITY_EXCEEDED` - `(.max_capacity && capacity > .max_capacity)`
+  * `MAX_CAPACITY_EXCEEDED`
   * `REALLOC_FAILURE`
+  * `ALIGNED_ALLOC_FAILURE`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -288,17 +284,11 @@ Shrinking will truncate elements that stick out.
 ### ** **cont_set_max_capacity** **
 
 ```c
-int cont_set_max_capacity(cont* cont_, size_t max_size);
+int cont_set_max_capacity(cont* cnt, size_t max_size);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->set_max_capacity(&cnt, max_capacity);
-```
-
-Sets `.max_capacity`.
-`0` = unlimited (default value).
+Sets container's `.max_capacity`. 
+Passing `0` / `cont_NO_LIMIT` will set **unlimited** max capacity.
 
 * **Return (success):** 
 
@@ -306,8 +296,10 @@ Sets `.max_capacity`.
 
 * **Return (failure):**
 
+  * `CONT_IS_NULL` (`cnt == NULL`)
   * `SIZE_OVERFLOW` - `(max_size > SIZE_MAX / .unit)`
   * `REALLOC_FAILURE`
+  * `ALIGNED_ALLOC_FAILURE`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -318,16 +310,16 @@ Sets `.max_capacity`.
 ### ** **cont_set_growth_factor** **
 
 ```c
-int cont_set_growth_factor(cont* cont_, double growth_factor);`
+int cont_set_growth_factor(cont* cnt, double growth_factor);`
 ```
 
-*Indirect call:*
-
+Sets container growth factor. Valid range is by default defined by the values:
 ```c
-cnt.m->set_growth_factor(&cnt, factor_value);
-```
+// cont.h
 
-Sets growth factor. Valid range 1.0 < factor ≤ 10.0.
+#define cont_GF_LBOUND 1.0
+#define cont_GF_UBOUND 10.0
+```
 
 * **Return (success):** 
 
@@ -335,7 +327,8 @@ Sets growth factor. Valid range 1.0 < factor ≤ 10.0.
 
 * **Return (failure):** 
 
-  * `INVALID_GROWTH_FACTOR_VALUE` - `(!(growth_factor > 1.0) || !(growth_factor <= 10.0) || !isfinite(growth_factor))`
+  * `CONT_IS_NULL` (`cnt == NULL`)
+  * `INVALID_GROWTH_FACTOR_VALUE`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -369,13 +362,7 @@ No safety mechanisms, use with caution.
 ### ** **cont_get** **
 
 ```c
-void* cont_get(cont* cont_, size_t index);
-```
-
-*Indirect call:*
-
-```c
-cnt.m->get(&cnt, i);
+void* cont_get(cont* cnt, size_t index);
 ```
 
 Returns pointer to the element at a given index. If index is invalid, it returns NULL.
@@ -386,7 +373,7 @@ Returns pointer to the element at a given index. If index is invalid, it returns
 
 * **Return (failure):** 
   
-  * `NULL` - `(index >= .count)`
+  * `NULL` - `(index >= .count)`, `(cnt == NULL)`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -397,16 +384,10 @@ Returns pointer to the element at a given index. If index is invalid, it returns
 ### ** **cont_pop** **
 
 ```c
-void* cont_pop(cont* cont_);
+void* cont_pop(cont* cnt);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->pop(&cnt);
-```
-
-Returns pointer to the last element and decreases count by 1. If count == 0, it returns NULL and exits.
+Returns pointer to the last element and decreases container count by 1. If `.count == 0`, it returns `NULL` and exits.
 
 * **Return (success):** 
 
@@ -414,7 +395,7 @@ Returns pointer to the last element and decreases count by 1. If count == 0, it 
 
 * **Return (failure):**
   
-  * `NULL` - `(!.count)`
+  * `NULL` - `(.count == 0)`, `(cnt == NULL)`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -425,17 +406,11 @@ Returns pointer to the last element and decreases count by 1. If count == 0, it 
 ### ** **cont_cv** **
 
 ```c
-int cont_cv(cont* cont_, size_t index, void* buffer, size_t n);
+int cont_cv(cont* cnt, size_t index, void* buffer, size_t n);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->cv(&cnt, i, buffer, n);
-```
-
-Copies n elements starting at the specified index into a specified buffer. 
-Passing n == 0 results in taking all elements from the index to the end.
+Copies `n` elements into a given `buffer` starting at `index`.
+Passing `n == 0` / `cont_ALL` results in copying all elements from `index` to the end of a container. Can be used to copy internally inside a container, if `.capacity` is too small to acomodate the elements that stick out, [cont_grow](#-cont_grow-) is called to make a room.
 
 * **Return (success):** 
 
@@ -443,9 +418,11 @@ Passing n == 0 results in taking all elements from the index to the end.
 
 * **Return (failure):**
 
-  * `NULL_ARRAY_POINTER` - `(!buffer)`
-  * `INVALID_INDEX` - `(index >= .count)`
-  * `INVALID_RANGE` - `(n > .count - index)`
+  * `CONT_IS_NULL` (`cnt == NULL`)
+  * `NULL_ARRAY_POINTER` - (`buffer == NULL`)
+  * `INVALID_INDEX` - (`index >= .count`)
+  * `INVALID_RANGE` - (`n > .count - index`)
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -456,17 +433,11 @@ Passing n == 0 results in taking all elements from the index to the end.
 ### ** **cont_split** **
 
 ```c
-cont cont_split(cont* cont_, size_t index);
+cont cont_split(cont* cnt, size_t index);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->split(&cnt, i);
-```
-
-Splits container in two at a given index and returns the one starting at the index.
-If the index is invalid or if memory allocation/reallocation fails, it makes sure there are no memory leaks and returns INVALID_CONT.
+Splits a container in two at a given index and returns the one starting at that index.
+If the index is invalid or if memory allocation/reallocation fails, it returns `INVALID_CONT`.
 
 * **Return (success):** 
   
@@ -474,7 +445,7 @@ If the index is invalid or if memory allocation/reallocation fails, it makes sur
 
 * **Return (failure):** 
   
-  * `INVALID_CONT` - `(!index || index >= .count)`, malloc/realloc failure
+  * `INVALID_CONT` - (`cnt == NULL`), (`index == 0 || index >= .count`), malloc/realloc/aligned alloc failure
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -485,7 +456,7 @@ If the index is invalid or if memory allocation/reallocation fails, it makes sur
 ### ** **cont_sub** **
 
 ```c
-cont cont_sub(cont* cont_, size_t index, size_t n);
+cont cont_sub(cont* cnt, size_t index, size_t n);
 ```
 
 *Indirect call:*
@@ -565,7 +536,7 @@ No safety mechanisms, use with caution.
 ### ** **cont_set** **
 
 ```c
-int cont_set(cont* cont_, size_t index, void* item);
+int cont_set(cont* cnt, size_t index, void* item);
 ```
 
 *Indirect call:*
@@ -594,7 +565,7 @@ Sets the value of an element at a given index.
 ### ** **cont_push** **
 
 ```c
-int cont_push(cont* cont_, void* item);
+int cont_push(cont* cnt, void* item);
 ```
 
 *Indirect call:*
@@ -624,7 +595,7 @@ Adds an element to the end of the container.
 ### ** **cont_push_front** **
 
 ```c
-int cont_push_front(cont* cont_, void* item);
+int cont_push_front(cont* cnt, void* item);
 ```
 
 *Indirect call:*
@@ -654,7 +625,7 @@ Adds an element at the first index. If the container is not empty, it shifts all
 ### ** **cont_append** **
 
 ```c
-int cont_append(cont* cont_, void* arr, size_t n);
+int cont_append(cont* cnt, void* arr, size_t n);
 ```
 
 *Indirect call:*
@@ -686,7 +657,7 @@ Appends n elements from a given array to the container.
 ### ** **cont_prepend** **
 
 ```c
-int cont_prepend(cont* cont_, void* arr, size_t n);
+int cont_prepend(cont* cnt, void* arr, size_t n);
 ```
 
 *Indirect call:*
@@ -718,7 +689,7 @@ Prepends n elements from a given array to the container, shifting any existing e
 ### ** **cont_extend** **
 
 ```c
-int cont_extend(cont* cont_, cont* cont_2);
+int cont_extend(cont* cnt, cont* cont_2);
 ```
 
 *Indirect call:*
@@ -748,7 +719,7 @@ Extends the container by appending all elements from another container. The poin
 ### ** **cont_write** **
 
 ```c
-int cont_write(cont* cont_, size_t index, void* arr, size_t num);
+int cont_write(cont* cnt, size_t index, void* arr, size_t num);
 ```
 
 *Indirect call:*
@@ -781,7 +752,7 @@ Writes n elements from a given array to the container starting at the given inde
 ### ** **cont_insert** **
 
 ```c
-int cont_insert(cont* cont_, size_t index, void* item);
+int cont_insert(cont* cnt, size_t index, void* item);
 ```
 
 *Indirect call:*
@@ -812,7 +783,7 @@ Inserts an element at the specified index, shifting any existing elements to the
 ### ** **cont_insert_range** **
 
 ```c
-int cont_insert_range(cont* cont_, size_t index, void* arr, size_t num);
+int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num);
 ```
 
 *Indirect call:*
@@ -847,7 +818,7 @@ Inserts n elements from the given array from the specified index onward, shiftin
 ### ** **cont_set_space** **
 
 ```c
-int cont_set_space(cont* cont_, size_t n);
+int cont_set_space(cont* cnt, size_t n);
 ```
 
 *Indirect call:*
@@ -878,7 +849,7 @@ Sets the free space between the last element and the end of the container determ
 ### ** **cont_grow** **
 
 ```c
-int cont_grow(cont* cont_, size_t required_capacity);
+int cont_grow(cont* cnt, size_t required_capacity);
 ```
 
 *Indirect call:*
@@ -936,7 +907,7 @@ Reduces capacity to fit the count. Equivalent to `cont_set_space(&cnt, 0)`.
 ### ** **cont_remove** **
 
 ```c
-int cont_remove(cont* cont_, size_t index);
+int cont_remove(cont* cnt, size_t index);
 ```
 
 *Indirect call:*
@@ -964,7 +935,7 @@ Removes the element at the specified index, shifting any following elements to t
 ### ** **cont_cut** **
 
 ```c
-int cont_cut(cont* cont_, size_t index, size_t n);
+int cont_cut(cont* cnt, size_t index, size_t n);
 ```
 
 *Indirect call:*
@@ -1081,7 +1052,7 @@ Reverses the order of elements in the container.
 ### ** **cont_set_blank** **
 
 ```c
-int cont_set_blank(cont* cont_, size_t position, size_t n);
+int cont_set_blank(cont* cnt, size_t position, size_t n);
 ```
 
 *Indirect call:*

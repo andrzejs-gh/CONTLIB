@@ -8,6 +8,8 @@
 #define cont_NO_LIMIT 0
 #define cont_ALL 0
 
+#define cont_GF 2.0
+
 #define cont_GF_LBOUND 1.0
 #define cont_GF_UBOUND 10.0
 

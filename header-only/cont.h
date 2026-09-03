@@ -8,14 +8,16 @@
 #define cont_NO_LIMIT 0
 #define cont_ALL 0
 
+#define cont_GF 2.0
+
 #define cont_GF_LBOUND 1.0
 #define cont_GF_UBOUND 10.0
 
 #define cont_NEW(type, capacity) 						  \
-        cont_new(capacity, sizeof(type), _Alignof(type))
+cont_new(capacity, sizeof(type), _Alignof(type))
 
 #define cont_ITEM(cnt, index, type) 					  \
-                ((type*)cnt->addr)[index]
+((type*)cnt->addr)[index]
 
 enum error_codes
 {
@@ -88,8 +90,6 @@ int cont_grow(cont* cnt, size_t required_capacity);
 
 #ifdef CONT_IMPLEMENTATION
 
-#include "cont.h"
-#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -122,8 +122,8 @@ cont cont_new(size_t capacity, size_t unit, size_t alignment)
         .alignment = alignment,
         .count = 0,
         .capacity = capacity,
-        .max_capacity = 0,
-        .growth_factor = 2.0,
+        .max_capacity = cont_NO_LIMIT,
+        .growth_factor = cont_GF,
         .addr = addr,
     };
 
@@ -166,7 +166,7 @@ int cont_set_count(cont* cnt, size_t count)
     if ( count > cnt->capacity )
     {
         int ret = cont_grow(cnt, count);
-        if ( !ret ) return ret;
+        if ( ret ) return ret;
     }
 
     cnt->count = count;
@@ -343,7 +343,15 @@ int cont_cv(cont* cnt, size_t index, void* buffer, size_t n)
 
     size_t unit = cnt->unit;
 
-    memmove(buffer, cnt->addr + index*unit, n*unit);
+    uintptr_t buff_begin = (uintptr_t)buffer;
+    uintptr_t buff_end = buff_begin + n*unit;
+    uintptr_t cont_begin = (uintptr_t)cnt->addr;
+    uintptr_t cont_end = cont_begin + cnt->capacity*unit;
+
+    if ( buff_begin < cont_end && cont_begin < buff_end )
+        return BUFFER_OVERLAP;
+
+    memcpy(buffer, (cnt->addr+index*unit), n*unit);
 
     return 0;
 }
@@ -971,7 +979,6 @@ int cont_grow(cont* cnt, size_t required_capacity)
 
     return 0;
 }
-
 
 #endif
 

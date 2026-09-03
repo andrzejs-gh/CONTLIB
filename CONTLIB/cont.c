@@ -32,8 +32,8 @@ cont cont_new(size_t capacity, size_t unit, size_t alignment)
 		.alignment = alignment,
         .count = 0,
         .capacity = capacity,
-        .max_capacity = 0,
-        .growth_factor = 2.0,
+        .max_capacity = cont_NO_LIMIT,
+        .growth_factor = cont_GF,
         .addr = addr,
     };
     
@@ -163,6 +163,7 @@ int cont_set_max_capacity(cont* cnt, size_t max_size)
 				return ALIGNED_ALLOC_FAILURE;
 
 			size_t size_to_copy = (max_size > cnt->count) ? cnt->count : max_size;
+				   size_to_copy *= unit;
 
 			memcpy(ptr, cnt->addr, size_to_copy);
 			free(cnt->addr);

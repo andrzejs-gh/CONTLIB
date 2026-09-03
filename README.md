@@ -46,7 +46,12 @@ Growth factor can be set to any value between:
 #define cont_GF_LBOUND 1.0
 #define cont_GF_UBOUND 10.0
 ```
-the default value is `2.0`. 
+the default value is set to `2.0`:
+```c
+// cont.h
+
+#define cont_GF 2.0
+```
 
 When the capacity is full and new element(s) need to be added, the **cont** grows geometricaly acording to the formula: 
 ```c

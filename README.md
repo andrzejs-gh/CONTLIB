@@ -563,7 +563,7 @@ Adds an element at the end of a container, `item` cannot point to the inside of 
   * `NULL_ITEM_POINTER` - `(item ==  NULL)`
   * `MAX_CAPACITY_EXCEEDED`
   * `BUFFER_OVERLAP` - if `item` points to the inside of the container
-  * `cont_grow` error codes
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -589,7 +589,7 @@ Adds an element at the first index. If a container is not empty, it shifts all e
   * `NULL_ITEM_POINTER` - `(!item)`
   * `MAX_CAPACITY_EXCEEDED`
   * `BUFFER_OVERLAP` - if `item` points to the inside of the container
-  * `cont_grow` error codes
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -603,13 +603,7 @@ Adds an element at the first index. If a container is not empty, it shifts all e
 int cont_append(cont* cnt, void* arr, size_t n);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->append(&cnt, arr, n);
-```
-
-Appends n elements from a given array to the container. 
+Appends `n` elements from a given array to the container. The array cannot overlap with the container.
 
 * **Return (success):** 
 
@@ -617,11 +611,13 @@ Appends n elements from a given array to the container.
 
 * **Return (failure):**
 
-  * `NULL_ARRAY_POINTER` - `(!arr)`
-  * `NULL_ELEMENT_COUNT` - `(!n)`
+  * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `NULL_ARRAY_POINTER` - `(arr == NULL)`
+  * `NULL_ELEMENT_COUNT` - `(n == 0)`
   * `SIZE_OVERFLOW` - `(.count > SIZE_MAX - n)`
-  * `MAX_CAPACITY_EXCEEDED` - `(.max_capacity && .count + n > .max_capacity)`
-  * `cont_grow` errors
+  * `BUFFER_OVERLAP`
+  * `MAX_CAPACITY_EXCEEDED`
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -635,13 +631,7 @@ Appends n elements from a given array to the container.
 int cont_prepend(cont* cnt, void* arr, size_t n);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->prepend(&cnt, arr, n);
-```
-
-Prepends n elements from a given array to the container, shifting any existing elements to the right.
+Prepends `n` elements from a given array to the container, shifting any existing elements to the right. The array cannot overlap with the container.
 
 * **Return (success):** 
 
@@ -649,11 +639,13 @@ Prepends n elements from a given array to the container, shifting any existing e
 
 * **Return (failure):**
 
-  * `NULL_ARRAY_POINTER` - `(!arr)`
-  * `NULL_ELEMENT_COUNT` - `(!n)`
+  * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `NULL_ARRAY_POINTER` - `(arr == NULL)`
+  * `NULL_ELEMENT_COUNT` - `(n == 0)`
   * `SIZE_OVERFLOW` - `(.count > SIZE_MAX - n)`
-  * `MAX_CAPACITY_EXCEEDED` - `(.max_capacity && .count + n > .max_capacity)`
-  * `cont_grow` errors
+  * `MAX_CAPACITY_EXCEEDED`
+  * `BUFFER_OVERLAP`
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -683,7 +675,7 @@ Extends the container by appending all elements from another container. The poin
 
   * `SAME_CONT` - `(cont_ == cont_2)`
   * `UNIT_MISMATCH` - `(cont_.unit != cont_2.unit)`
-  * `cont_grow` errors
+  * [cont_grow](#-cont_grow-) errors
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -716,7 +708,7 @@ Writes n elements from a given array to the container starting at the given inde
   * `INVALID_INDEX` - `(index > .count)`
   * `SIZE_OVERFLOW` - `(index > SIZE_MAX - num)`, `(num > SIZE_MAX / .unit)`
   * `MAX_CAPACITY_EXCEEDED` - adding elements past .max_capacity (if set)
-  * `cont_grow` errors
+  * [cont_grow](#-cont_grow-) errors
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -747,7 +739,7 @@ Inserts an element at the specified index, shifting any existing elements to the
   * `NULL_ITEM_POINTER` - `(!item)`
   * `INVALID_INDEX` - `(index > .count)`
   * `MAX_CAPACITY_EXCEEDED` - `(.max_capacity && .count == .max_capacity)`
-  * `cont_grow` errors
+  * [cont_grow](#-cont_grow-) errors
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -780,7 +772,7 @@ Inserts n elements from the given array from the specified index onward, shiftin
   * `INVALID_INDEX` - `(index > .count)`
   * `SIZE_OVERFLOW` - `(.count > SIZE_MAX - num)`, `(num > SIZE_MAX / .unit)`
   * `MAX_CAPACITY_EXCEEDED` - `(.max_capacity && .count + num > .max_capacity)`
-  * `cont_grow` errors
+  * [cont_grow](#-cont_grow-) errors
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>

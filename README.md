@@ -551,13 +551,7 @@ Sets the value of an element at a given index.
 int cont_push(cont* cnt, void* item);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->push(&cnt, &item);
-```
-
-Adds an element to the end of the container.
+Adds an element at the end of a container, `item` cannot point to the inside of the container.
 
 * **Return (success):** 
 
@@ -565,9 +559,11 @@ Adds an element to the end of the container.
 
 * **Return (failure):**
 
-  * `NULL_ITEM_POINTER` - `(!item)`
-  * `MAX_CAPACITY_EXCEEDED` - `(.max_capacity && .count == .max_capacity)`
-  * `cont_grow` errors
+  * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `NULL_ITEM_POINTER` - `(item ==  NULL)`
+  * `MAX_CAPACITY_EXCEEDED`
+  * `BUFFER_OVERLAP` - if `item` points to the inside of the container
+  * `cont_grow` error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -581,13 +577,7 @@ Adds an element to the end of the container.
 int cont_push_front(cont* cnt, void* item);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->push_front(&cnt, &item);
-```
-
-Adds an element at the first index. If the container is not empty, it shifts all existing elements to the right.
+Adds an element at the first index. If a container is not empty, it shifts all existing elements to the right. The `item` cannot point to the inside of the container.
 
 * **Return (success):** 
 
@@ -595,9 +585,11 @@ Adds an element at the first index. If the container is not empty, it shifts all
 
 * **Return (failure):**
 
+  * `CONT_IS_NULL` - `(cnt == NULL)`
   * `NULL_ITEM_POINTER` - `(!item)`
-  * `MAX_CAPACITY_EXCEEDED` - `(.max_capacity && .count == .max_capacity)`
-  * `cont_grow` errors
+  * `MAX_CAPACITY_EXCEEDED`
+  * `BUFFER_OVERLAP` - if `item` points to the inside of the container
+  * `cont_grow` error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>

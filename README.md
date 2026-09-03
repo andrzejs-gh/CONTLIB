@@ -659,13 +659,7 @@ Prepends `n` elements from a given array to the container, shifting any existing
 int cont_extend(cont* cnt, cont* cont_2);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->extend(&cnt, &cnt2);
-```
-
-Extends the container by appending all elements from another container. The pointers must point to different containers and their units must match.
+Extends a container by appending all elements from another container. The pointers must point to different containers and their `.unit`'s must match.
 
 * **Return (success):** 
 
@@ -673,9 +667,10 @@ Extends the container by appending all elements from another container. The poin
 
 * **Return (failure):**
 
+  * `CONT_IS_NULL` - `(cnt == NULL)`
   * `SAME_CONT` - `(cont_ == cont_2)`
   * `UNIT_MISMATCH` - `(cont_.unit != cont_2.unit)`
-  * [cont_grow](#-cont_grow-) errors
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -686,16 +681,10 @@ Extends the container by appending all elements from another container. The poin
 ### ** **cont_write** **
 
 ```c
-int cont_write(cont* cnt, size_t index, void* arr, size_t num);
+int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->write(&cnt, index, arr, num);
-```
-
-Writes n elements from a given array to the container starting at the given index (can also start at last index + 1, appending elements). Overwrites existing elements if there is a collision.
+Writes `num_of_items` elements from a given array to a container, starting at a given index inside the container (can also start at last index + 1, appending elements). Overwrites existing elements. The array cannot overlap with the container.
 
 * **Return (success):** 
 
@@ -703,12 +692,14 @@ Writes n elements from a given array to the container starting at the given inde
 
 * **Return (failure):**
 
-  * `NULL_ARRAY_POINTER` - `(!arr)`
-  * `NULL_ELEMENT_COUNT` - `(!num)`
+  * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `NULL_ARRAY_POINTER` - `(arr == NULL)`
+  * `NULL_ELEMENT_COUNT` - `(num == 0)`
   * `INVALID_INDEX` - `(index > .count)`
   * `SIZE_OVERFLOW` - `(index > SIZE_MAX - num)`, `(num > SIZE_MAX / .unit)`
-  * `MAX_CAPACITY_EXCEEDED` - adding elements past .max_capacity (if set)
-  * [cont_grow](#-cont_grow-) errors
+  * `MAX_CAPACITY_EXCEEDED` 
+  * `BUFFER_OVERLAP`
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -722,13 +713,7 @@ Writes n elements from a given array to the container starting at the given inde
 int cont_insert(cont* cnt, size_t index, void* item);
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->insert(&cnt, index, &item);
-```
-
-Inserts an element at the specified index, shifting any existing elements to the right.
+Inserts an element at a specified index, shifting any existing elements to the right. The item cannot point to the inside of the container.
 
 * **Return (success):** 
 
@@ -736,9 +721,11 @@ Inserts an element at the specified index, shifting any existing elements to the
 
 * **Return (failure):**
 
+  * `CONT_IS_NULL` - `(cnt == NULL)`
   * `NULL_ITEM_POINTER` - `(!item)`
   * `INVALID_INDEX` - `(index > .count)`
-  * `MAX_CAPACITY_EXCEEDED` - `(.max_capacity && .count == .max_capacity)`
+  * `MAX_CAPACITY_EXCEEDED`
+  * `BUFFER_OVERLAP`
   * [cont_grow](#-cont_grow-) errors
 
 <p align="right">
@@ -750,16 +737,10 @@ Inserts an element at the specified index, shifting any existing elements to the
 ### ** **cont_insert_range** **
 
 ```c
-int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num);
+int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 ```
 
-*Indirect call:*
-
-```c
-cnt.m->insert_range(&cnt, index, arr, num);
-```
-
-Inserts n elements from the given array from the specified index onward, shifting existing elements to the right.
+Inserts `num_of_items` elements from a given array at a specified index shifting existing elements to the right. The array cannot overlap with the container.
 
 * **Return (success):** 
 
@@ -767,12 +748,14 @@ Inserts n elements from the given array from the specified index onward, shiftin
 
 * **Return (failure):**
 
+  * `CONT_IS_NULL` - `(cnt == NULL)`
   * `NULL_ARRAY_POINTER` - `(!arr)`
   * `NULL_ELEMENT_COUNT` - `(!num)`
   * `INVALID_INDEX` - `(index > .count)`
   * `SIZE_OVERFLOW` - `(.count > SIZE_MAX - num)`, `(num > SIZE_MAX / .unit)`
-  * `MAX_CAPACITY_EXCEEDED` - `(.max_capacity && .count + num > .max_capacity)`
-  * [cont_grow](#-cont_grow-) errors
+  * `MAX_CAPACITY_EXCEEDED`
+  * `BUFFER_OVERLAP`
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>

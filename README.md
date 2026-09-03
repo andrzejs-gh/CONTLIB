@@ -9,7 +9,7 @@
 ---
 
 ## Overview
-CONTILB provides **cont** objects - generic and dynamic data containers for storing elements of arbitrary size and alignment.
+**CONTILB** provides **cont** objects - generic and dynamic data containers for storing elements of arbitrary size and alignment.
 
 **cont** struct (non-opaque):
 ```c
@@ -26,7 +26,7 @@ typedef struct
 ```
 The struct is intentionaly made non-opaque so the fields can be manually manipulated to bypass API overhead if needed.
 
-When creating a new **cont** (see [Creation and destruction](#creation-and-destruction), [cont_NEW](#-cont_new-)), you specify the type and the initial capacity - which is the memory that the **cont** will allocate equal to 
+When creating a new **cont** (see [Creation and destruction](#creation-and-destruction), [cont_NEW](#-cont_new-)), you specify the type and the initial capacity - which defines the memory that the **cont** will allocate: 
 ```c
 capacity * sizeof(type)
 ```
@@ -262,7 +262,7 @@ int cont_set_capacity(cont* cnt, size_t capacity);
 ```
 
 Sets container capacity (`.capacity`).
-Shrinking below the current value will truncate elements that stick out. Reallocs the buffer freeing or increasing allocated memory (which is always equal to `.capacity`).
+Shrinking below the current value will truncate elements that stick out. Reallocs the buffer freeing or increasing allocated memory (which is always equal to `.capacity * .unit`).
 
 * **Return (success):** 
 
@@ -420,10 +420,10 @@ Passing `n == 0` / `n == cont_ALL` results in copying all elements from `index` 
 
 * **Return (failure):**
 
-  * `CONT_IS_NULL` (`cnt == NULL`)
-  * `NULL_ARRAY_POINTER` - (`buffer == NULL`)
-  * `INVALID_INDEX` - (`index >= .count`)
-  * `INVALID_RANGE` - (`n > .count - index`)
+  * `CONT_IS_NULL` `(cnt == NULL)`
+  * `NULL_ARRAY_POINTER` - `(buffer == NULL)`
+  * `INVALID_INDEX` - `(index >= .count)`
+  * `INVALID_RANGE` - `(n > .count - index)`
   * `BUFFER_OVERLAP`
 
 <p align="right">

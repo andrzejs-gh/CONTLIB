@@ -206,6 +206,16 @@ int cont_set_growth_factor(cont* cnt, double growth_factor)
 	return 0;
 }
 
+int cont_lock(cont* cnt)
+{
+	if ( !cnt )
+		return CONT_IS_NULL;
+	if ( !cnt->count )
+		return EMPTY_CONT;
+
+	return cont_set_max_capacity(cnt, cnt->count);
+}
+
 void* cont_get(cont* cnt, size_t index)
 {
 	if ( !cnt )
@@ -891,5 +901,20 @@ int cont_grow(cont* cnt, size_t required_capacity)
 	cnt->addr = ptr;
 	cnt->capacity = final_capacity_;
 	
+	return 0;
+}
+
+int cont_ensure(cont* cnt, size_t space)
+{
+	if ( !cnt )
+		return CONT_IS_NULL;
+
+	if ( (cnt->capacity - cnt->count) < space )
+	{
+		int ret = cont_grow(cnt, cnt->count+space);
+		if ( ret )
+			return ret;
+	}
+
 	return 0;
 }

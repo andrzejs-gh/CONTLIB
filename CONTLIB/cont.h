@@ -75,6 +75,7 @@ void* cont_get(cont* cnt, size_t index);
 int cont_set(cont* cnt, size_t index, void* item);
 int cont_cv(cont* cnt, size_t index, void* buffer, size_t n);
 void* cont_pop(cont* cnt);
+int cont_mkroom(cont* cnt, size_t index); // NEW
 int cont_push(cont* cnt, void* item);
 int cont_push_front(cont* cnt, void* item);
 int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items);

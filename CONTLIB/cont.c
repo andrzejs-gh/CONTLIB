@@ -293,6 +293,27 @@ void* cont_pop(cont* cnt)
 	return cnt->addr + (count-1)*cnt->unit;
 }
 
+int cont_mkroom(cont* cnt, size_t index)
+{
+	if ( !cnt )
+		return CONT_IS_NULL;
+
+	size_t count = cnt->count;
+
+	if ( index >= count )
+		return INVALID_INDEX;
+
+	if ( (cnt->max_capacity != cont_NO_LIMIT) && (count == cnt->max_capacity) )
+		return MAX_CAPACITY_EXCEEDED;
+
+	size_t unit = cnt->unit;
+	unsigned char* addr = cnt->addr;
+
+	memmove(addr+((index+1)*unit), addr+(index*unit), (count-index)*unit);
+
+	return 0;
+}
+
 int cont_push(cont* cnt, void* item)
 {
 	if ( !cnt )

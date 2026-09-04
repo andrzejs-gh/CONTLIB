@@ -57,6 +57,18 @@ do													\
 													\
 } while (0);
 
+#define cont_SET(cnt_ptr, index, type, item)		\
+do													\
+{													\
+	cont* cnt = (cnt_ptr);							\
+	if ( !cnt ) break;								\
+													\
+	if ( index > cnt->count - 1 ) break; 			\
+													\
+	((type*)cnt->addr)[index] = (item); 			\
+													\
+} while (0);
+
 enum error_codes
 {
 	INVALID_INDEX = 1,

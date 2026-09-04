@@ -19,6 +19,44 @@
 #define cont_ITEM(cnt, index, type) 					  \
 				 ((type*)cnt->addr)[index]
 
+#define cont_PUSH(cnt_ptr, type, item)				\
+do													\
+{													\
+	cont* cnt = (cnt_ptr);							\
+	if ( !cnt ) break;								\
+													\
+	if ( (cnt->capacity - cnt->count) == 0 )		\
+	{												\
+		if ( cont_grow(cnt, cnt->count+1) ) break;	\
+	}												\
+													\
+	((type*)cnt->addr)[cnt->count] = (item);		\
+	cnt->count++;									\
+													\
+} while (0);
+
+#define cont_PUSH_FRONT(cnt_ptr, type, item)		\
+do													\
+{													\
+	cont* cnt = (cnt_ptr);							\
+	if ( !cnt ) break;								\
+													\
+	if ( (cnt->capacity - cnt->count) == 0 )		\
+	{												\
+		if ( cont_grow(cnt, cnt->count+1) ) break;	\
+	}												\
+													\
+	memmove( 										\
+		      cnt->addr+cnt->unit, 					\
+			  cnt->addr, 							\
+			  cnt->count*cnt->unit					\
+		   ); 										\
+													\
+	((type*)cnt->addr)[0] = (item);					\
+	cnt->count++;									\
+													\
+} while (0);
+
 enum error_codes
 {
 	INVALID_INDEX = 1,

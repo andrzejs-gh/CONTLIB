@@ -243,7 +243,7 @@ Validates container fields.
 int cont_set_count(cont* cnt, size_t count);
 ```
 
-Sets container count. If the passed number exceeds `.capacity`, [cont_grow](#-cont_grow-) is called.
+Sets container count. If the passed number exceeds `.capacity`, [cont_grow](#-cont_grow-) is called. If it exceeds `.max_capacity`, the function returns `MAX_CAPACITY_EXCEEDED`.
 
 * **Return (success):** 
 

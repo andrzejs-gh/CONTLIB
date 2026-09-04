@@ -73,6 +73,9 @@ int cont_set_count(cont* cnt, size_t count)
 	if ( !cnt )
 		return CONT_IS_NULL;
 
+	if ( (cnt->max_capacity != cont_NO_LIMIT) && (count > cnt->max_capacity) )
+		return MAX_CAPACITY_EXCEEDED;
+
 	if ( count > cnt->capacity )
 	{
 		int ret = cont_grow(cnt, count);

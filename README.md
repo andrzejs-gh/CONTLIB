@@ -252,6 +252,7 @@ Sets container count. If the passed number exceeds `.capacity`, [cont_grow](#-co
 * **Return (failure):** 
   
   * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `MAX_CAPACITY_EXCEEDED`
   * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">

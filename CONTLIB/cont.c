@@ -242,7 +242,7 @@ int cont_set(cont* cnt, size_t index, void* item)
 	if ( item == cnt->addr+(index*unit) ) // if item points to itself
 		return 0;
 	
-	memcpy(cnt->addr + (index*unit), item, unit);
+	memcpy(cnt->addr+(index*unit), item, unit);
 	
 	return 0;
 }

@@ -873,6 +873,7 @@ Checks if a container has available `space`. If it doesn't, the function calls [
 * **Return (failure):**
 
   * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `SIZE_OVERFLOW` - `(space > SIZE_MAX - .count)`
   * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
@@ -951,6 +952,7 @@ until the value is greater or equal to `required_capacity`. This function is use
 * **Return (failure):**
 
   * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `INVALID_REQUIRED_CAPACITY`
   * `SIZE_OVERFLOW` - `(final_capacity_ > SIZE_MAX / unit)`
   * `REALLOC_FAILURE`
   * `ALIGNED_ALLOC_FAILURE`
@@ -1184,7 +1186,8 @@ enum error_codes
 	INVALID_RANGE,
 	CONT_IS_INVALID,
 	CONT_IS_NULL,
-	BUFFER_OVERLAP
+	BUFFER_OVERLAP,
+	INVALID_REQUIRED_CAPACITY
 };
 ```
 

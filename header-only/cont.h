@@ -47,7 +47,8 @@ enum error_codes
     INVALID_RANGE,
     CONT_IS_INVALID,
     CONT_IS_NULL,
-    BUFFER_OVERLAP
+    BUFFER_OVERLAP,
+    INVALID_REQUIRED_CAPACITY
 };
 
 typedef struct
@@ -979,6 +980,8 @@ int cont_grow(cont* cnt, size_t required_capacity)
 {
     if ( !cnt )
         return CONT_IS_NULL;
+    if ( required_capacity <= cnt->capacity )
+        return INVALID_REQUIRED_CAPACITY;
 
     double final_capacity = cnt->capacity;
     double growth_factor = cnt->growth_factor;
@@ -1033,6 +1036,9 @@ int cont_ensure(cont* cnt, size_t space)
 
     if ( (cnt->capacity - cnt->count) < space )
     {
+        if ( space > SIZE_MAX - cnt->count )
+            return SIZE_OVERFLOW;
+
         int ret = cont_grow(cnt, cnt->count+space);
         if ( ret )
             return ret;

@@ -11,7 +11,7 @@ cont cont_new(size_t capacity, size_t unit, size_t alignment)
 {
     if ( !capacity || !unit || !alignment || capacity > SIZE_MAX / unit )
 		return INVALID_CONT;
-	
+
 	unsigned char* addr;
 
 	if ( alignment <= _Alignof(max_align_t) )
@@ -36,7 +36,7 @@ cont cont_new(size_t capacity, size_t unit, size_t alignment)
         .growth_factor = cont_GF,
         .addr = addr,
     };
-    
+
     return cnt;
 }
 
@@ -44,10 +44,10 @@ int cont_is_valid(cont* cnt)
 {
 	if ( !cnt )
 		return 0;
-	
+
 	size_t capacity = cnt->capacity;
 	double growth_factor = cnt->growth_factor;
-	
+
 	if ( !cnt->unit || !cnt->alignment || !capacity || cnt->count > capacity )
 		return 0;
 
@@ -64,7 +64,7 @@ int cont_is_valid(cont* cnt)
 
 	if ( !cnt->addr )
 		return 0;
-		
+
 	return 1;
 }
 
@@ -81,9 +81,9 @@ int cont_set_count(cont* cnt, size_t count)
 		int ret = cont_grow(cnt, count);
 		if ( ret ) return ret;
 	}
-	
+
 	cnt->count = count;
-	
+
 	return 0;
 }
 
@@ -97,17 +97,17 @@ int cont_set_capacity(cont* cnt, size_t capacity)
 
 	if ( !capacity )
 		return NULL_CAPACITY;
-		
+
 	size_t unit = cnt->unit;
-		
+
 	if ( capacity > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
-		
+
 	size_t max_capacity = cnt->max_capacity;
-		
+
 	if ( (max_capacity != cont_NO_LIMIT) && (capacity > max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
-	
+
 	void* ptr;
 	if ( cnt->alignment <= _Alignof(max_align_t) )
 	{
@@ -145,7 +145,7 @@ int cont_set_max_capacity(cont* cnt, size_t max_size)
 	size_t unit = cnt->unit;
 	if ( max_size > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
-	
+
 	if ( max_size == cont_NO_LIMIT )
 	{
 		cnt->max_capacity = cont_NO_LIMIT;
@@ -171,7 +171,7 @@ int cont_set_max_capacity(cont* cnt, size_t max_size)
 			memcpy(ptr, cnt->addr, size_to_copy);
 			free(cnt->addr);
 		}
-		
+
 		cnt->addr = ptr;
 		cnt->max_capacity = max_size;
 		cnt->capacity = max_size;
@@ -184,7 +184,7 @@ int cont_set_max_capacity(cont* cnt, size_t max_size)
 		cnt->max_capacity = max_size;
 	}
 
-	return 0; 
+	return 0;
 }
 
 int cont_set_growth_factor(cont* cnt, double growth_factor)
@@ -200,9 +200,9 @@ int cont_set_growth_factor(cont* cnt, double growth_factor)
 			) || !isfinite(growth_factor)
 
 	   ) return INVALID_GROWTH_FACTOR_VALUE;
-		
+
 	cnt->growth_factor = growth_factor;
-	
+
 	return 0;
 }
 
@@ -241,32 +241,32 @@ int cont_set(cont* cnt, size_t index, void* item)
 
 	if ( item == cnt->addr+(index*unit) ) // if item points to itself
 		return 0;
-	
+
 	memcpy(cnt->addr+(index*unit), item, unit);
-	
+
 	return 0;
 }
 
 int cont_cv(cont* cnt, size_t index, void* buffer, size_t n)
-{	
+{
 	if ( !cnt )
 		return CONT_IS_NULL;
 
 	if ( !buffer )
 		return NULL_ARRAY_POINTER;
-		
+
 	size_t count = cnt->count;
-		
+
 	if ( index >= count )
 		return INVALID_INDEX;
-	
+
 	if ( n == cont_ALL )
 		n = count - index;
 	else if (n > count - index)
 		return INVALID_RANGE;
-	
+
 	size_t unit = cnt->unit;
-	
+
 	uintptr_t buff_begin = (uintptr_t)buffer;
 	uintptr_t buff_end = buff_begin + n*unit;
 	uintptr_t cont_begin = (uintptr_t)cnt->addr;
@@ -276,7 +276,7 @@ int cont_cv(cont* cnt, size_t index, void* buffer, size_t n)
 		return BUFFER_OVERLAP;
 
 	memcpy(buffer, (cnt->addr+index*unit), n*unit);
-	
+
 	return 0;
 }
 
@@ -288,7 +288,7 @@ void* cont_pop(cont* cnt)
 	size_t count = cnt->count;
 	if ( !count )
 		return NULL;
-	
+
 	cnt->count--;
 	return cnt->addr + (count-1)*cnt->unit;
 }
@@ -321,15 +321,15 @@ int cont_push(cont* cnt, void* item)
 
 	if ( !item )
 		return NULL_ITEM_POINTER;
-	
+
 	size_t count = cnt->count;
 	size_t max_capacity = cnt->max_capacity;
 
 	if ( (max_capacity != cont_NO_LIMIT) && (count == max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
-	
+
 	size_t unit = cnt->unit;
-	
+
 	uintptr_t arr_begin = (uintptr_t)item;
 	uintptr_t arr_end = arr_begin + unit;
 	uintptr_t cont_begin = (uintptr_t)cnt->addr;
@@ -339,16 +339,16 @@ int cont_push(cont* cnt, void* item)
 		return BUFFER_OVERLAP;
 
 	if ( count == cnt->capacity )
-	{		 
+	{
 		int ret = cont_grow(cnt, count+1);
 		if ( ret ) // cont_grow returns error code
 			return ret;
 	}
-	
+
 	memcpy(cnt->addr + count*unit, item, unit);
 	cnt->count++;
-	
-	return 0;	
+
+	return 0;
 }
 
 int cont_push_front(cont* cnt, void* item)
@@ -358,15 +358,15 @@ int cont_push_front(cont* cnt, void* item)
 
 	if ( !item )
 		return NULL_ITEM_POINTER;
-	
+
 	size_t count = cnt->count;
 	size_t max_capacity = cnt->max_capacity;
-	
+
 	if ( (max_capacity != cont_NO_LIMIT) && (count == max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 
 	size_t unit = cnt->unit;
-	
+
 	uintptr_t item_begin = (uintptr_t)item;
 	uintptr_t item_end = item_begin + unit;
 	uintptr_t cont_begin = (uintptr_t)cnt->addr;
@@ -383,17 +383,17 @@ int cont_push_front(cont* cnt, void* item)
 	}
 
 	unsigned char* addr = cnt->addr;
-	
+
 	memmove(addr+unit, addr, count*unit);
 	memcpy(addr, item, unit);
-	
+
 	cnt->count++;
-	
+
 	return 0;
 }
 
 int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
-{	
+{
 	if ( !cnt )
 		return CONT_IS_NULL;
 
@@ -401,19 +401,19 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
         return NULL_ARRAY_POINTER;
     if ( !num_of_items )
 		return NULL_ELEMENT_COUNT;
-		
+
 	size_t count = cnt->count;
-	
+
 	if ( index > count )
 		return INVALID_INDEX;
 	if ( index > SIZE_MAX - num_of_items )
 		return SIZE_OVERFLOW;
-	
+
 	size_t unit = cnt->unit;
-	
+
 	if ( num_of_items > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
-	
+
 	size_t size_to_copy = num_of_items*unit;
 
 	uintptr_t arr_begin = (uintptr_t)arr;
@@ -425,13 +425,13 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 		return BUFFER_OVERLAP;
 
 	size_t last_indx_plus_one = index + num_of_items;
-	
+
 	if ( last_indx_plus_one > cnt->capacity )
 	{
 		size_t max_capacity = cnt->max_capacity;
 		if ( (max_capacity != cont_NO_LIMIT) && (last_indx_plus_one > max_capacity) )
 			return MAX_CAPACITY_EXCEEDED;
-			
+
 		int ret = cont_grow(cnt, last_indx_plus_one);
 		if ( ret ) // cont_grow returns an error code
 			return ret;
@@ -444,7 +444,7 @@ int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	}
 
 	memcpy(cnt->addr+(index*unit), arr, size_to_copy);
-    
+
     return 0;
 }
 
@@ -454,15 +454,15 @@ int cont_insert(cont* cnt, size_t index, void* item)
 		return CONT_IS_NULL;
 
 	size_t count = cnt->count;
-	
+
 	if ( !item )
 		return NULL_ITEM_POINTER;
 	if ( index > count )
 		return INVALID_INDEX;
-		
+
 	if ( (cnt->max_capacity != cont_NO_LIMIT) && (count == cnt->max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
-	
+
 	size_t unit = cnt->unit;
 
 	uintptr_t item_begin = (uintptr_t)item;
@@ -481,11 +481,11 @@ int cont_insert(cont* cnt, size_t index, void* item)
 	}
 
 	unsigned char* position = cnt->addr + index*unit;
-	
+
 	memmove(position+unit, position, (count - index)*unit);
 	memcpy(position, item, unit);
 	cnt->count++;
-	
+
 	return 0;
 }
 
@@ -498,9 +498,9 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
         return NULL_ARRAY_POINTER;
     if ( !num_of_items )
 		return NULL_ELEMENT_COUNT;
-	
+
 	size_t count = cnt->count;
-		
+
 	if ( index > count )
 		return INVALID_INDEX;
 
@@ -508,14 +508,14 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 
 	if ( count > SIZE_MAX - num_of_items)
 		return SIZE_OVERFLOW;
-	
+
 	size_t max_capacity = cnt->max_capacity;
 
 	if ( (max_capacity != cont_NO_LIMIT) && (count + num_of_items > max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
 	if ( num_of_items > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
-	
+
 	size_t inserted_size = num_of_items*unit;
 
 	uintptr_t arr_begin = (uintptr_t)arr;
@@ -527,7 +527,7 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 		return BUFFER_OVERLAP;
 
 	size_t new_count = count + num_of_items;
-		
+
 	if ( new_count > cnt->capacity )
 	{
 		int ret = cont_grow(cnt, new_count);
@@ -536,7 +536,7 @@ int cont_insert_range(cont* cnt, size_t index, void* arr, size_t num_of_items)
 	}
 
 	unsigned char* position = cnt->addr + index*unit;
-	
+
 	memmove(position+inserted_size, position, (count-index)*unit);
 	memcpy(position, arr, inserted_size);
 	cnt->count += num_of_items;
@@ -555,28 +555,28 @@ int cont_prepend(cont* cnt, void* arr, size_t n)
 }
 
 int cont_set_space(cont* cnt, size_t n)
-{	
+{
 	if ( !cnt )
 		return CONT_IS_NULL;
 
 	size_t count = cnt->count;
 	if ( !count )
 		return EMPTY_CONT;
-	
+
 	if ( count > SIZE_MAX - n )
 		return SIZE_OVERFLOW;
-		
+
 	size_t new_capacity = count + n;
 	size_t max_capacity = cnt->max_capacity;
-		
+
 	if ( (max_capacity != cont_NO_LIMIT) && (new_capacity > max_capacity) )
 		return MAX_CAPACITY_EXCEEDED;
-		
+
 	size_t unit = cnt->unit;
-	
+
 	if ( new_capacity > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
-	
+
 	void* ptr;
 	if ( cnt->alignment <= _Alignof(max_align_t) )
 	{
@@ -596,7 +596,7 @@ int cont_set_space(cont* cnt, size_t n)
 
 	cnt->capacity = new_capacity;
 	cnt->addr = ptr;
-	
+
 	return 0;
 }
 
@@ -613,13 +613,13 @@ int cont_remove(cont* cnt, size_t index)
 	size_t count = cnt->count;
 	if ( index >= count )
 		return INVALID_INDEX;
-	
+
 	size_t unit = cnt->unit;
 	unsigned char* begin = cnt->addr + index*unit;
-	
+
 	memmove(begin, begin+unit, (count-1-index)*unit);
 	cnt->count--;
-		
+
 	return 0;
 }
 
@@ -629,19 +629,19 @@ int cont_remove_range(cont* cnt, size_t index, size_t n)
 		return CONT_IS_NULL;
 
 	size_t count = cnt->count;
-	
+
 	if ( index >= count )
 		return INVALID_INDEX;
-	
+
 	if ( n == cont_ALL )
 		n = count - index;
 	else if ( n > count - index )
 		return INVALID_RANGE;
-	
+
 	size_t unit = cnt->unit;
 	unsigned char* begin = cnt->addr + index*unit;
 	unsigned char* end = begin + n*unit;
-	
+
 	memmove(begin, end, (count-index-n)*unit);
 	cnt->count -= n;
 
@@ -654,19 +654,19 @@ int cont_reverse(cont* cnt)
 		return CONT_IS_NULL;
 
 	size_t count = cnt->count;
-	
+
 	if ( !count )
 		return EMPTY_CONT;
 	if ( count == 1 )
 		return 0;
-	
+
 	size_t unit = cnt->unit;
-	
+
 	unsigned char* front = cnt->addr;
 	unsigned char* back = cnt->addr + (count-1)*unit;
 	unsigned char stack_buffer[cont_UNIT_BUFF_SIZE];
 	unsigned char* buffer;
-	
+
 	if ( unit <= cont_UNIT_BUFF_SIZE )
 		buffer = stack_buffer;
 	else
@@ -675,7 +675,7 @@ int cont_reverse(cont* cnt)
 		if ( !buffer )
 			return MALLOC_FAILURE;
 	}
-	
+
 	while ( back > front )
 	{
 		memcpy(buffer, front, unit);
@@ -684,10 +684,10 @@ int cont_reverse(cont* cnt)
 		front += unit;
 		back -= unit;
 	}
-	
+
 	if ( buffer != stack_buffer )
 		free(buffer);
-	
+
 	return 0;
 }
 
@@ -706,17 +706,17 @@ int cont_set_blank(cont* cnt, size_t position, size_t n)
 		return CONT_IS_NULL;
 
 	size_t capacity = cnt->capacity;
-	
+
 	if ( position >= capacity )
 		return INVALID_INDEX;
-	
+
 	if ( n == cont_ALL )
 		n = capacity - position;
 	else if ( n > capacity - position )
 		return INVALID_RANGE;
-	
+
 	size_t unit = cnt->unit;
-	
+
 	memset((cnt->addr + position*unit), 0, n*unit);
 	return 0;
 }
@@ -741,11 +741,11 @@ int cont_free(cont* cnt)
 
 	if ( !cnt->addr )
 		return CONT_ALREADY_FREED;
-	
+
 	free(cnt->addr);
-	
+
 	*cnt = INVALID_CONT;
-	
+
 	return 0;
 }
 
@@ -755,7 +755,7 @@ cont cont_clone(cont* cnt)
 		return INVALID_CONT;
 
 	size_t unit = cnt->unit;
-	
+
 	void* cloned_cont_addr;
 	if ( cnt->alignment <= _Alignof(max_align_t) )
 	{
@@ -769,7 +769,7 @@ cont cont_clone(cont* cnt)
 		return INVALID_CONT;
 
 	memcpy(cloned_cont_addr, cnt->addr, cnt->count*unit);
-	
+
 	cont clone = *cnt;
 	clone.addr = cloned_cont_addr;
 
@@ -787,7 +787,7 @@ int cont_extend(cont* cnt, cont* cnt2)
 		return UNIT_MISMATCH;
 	if ( !cnt2->count )
 		return 0;
-	
+
 	return cont_append(cnt, cnt2->addr, cnt2->count);
 }
 
@@ -797,15 +797,15 @@ cont cont_split(cont* cnt, size_t index)
 		return INVALID_CONT;
 
 	size_t count = cnt->count;
-	
+
 	if ( !index || index >= count )
 		return INVALID_CONT;
-	
+
 	size_t unit = cnt->unit;
-	
+
 	size_t new_cont_count = count - index;
 	size_t new_cont_size = new_cont_count*unit;
-	
+
 	void* new_addr;
 	if ( cnt->alignment <= _Alignof(max_align_t) )
 	{
@@ -839,7 +839,7 @@ cont cont_sub(cont* cnt, size_t index, size_t n_elements)
 		return INVALID_CONT;
 
 	size_t count = cnt->count;
-	
+
 	if ( index >= count )
 		return INVALID_CONT;
 
@@ -847,10 +847,10 @@ cont cont_sub(cont* cnt, size_t index, size_t n_elements)
 		n_elements = count - index;
 	else if ( n_elements > count - index )
 		return INVALID_CONT;
-	
+
 	size_t unit = cnt->unit;
 	size_t size = n_elements*unit;
-	
+
 	void* sub_cont_addr;
 	if ( cnt->alignment <= _Alignof(max_align_t) )
 	{
@@ -862,7 +862,7 @@ cont cont_sub(cont* cnt, size_t index, size_t n_elements)
 	}
 	if ( !sub_cont_addr )
 		return INVALID_CONT;
-		
+
 	memcpy(sub_cont_addr, cnt->addr+(index*unit), size);
 
 	cont sub_cont = *cnt;
@@ -878,13 +878,15 @@ int cont_grow(cont* cnt, size_t required_capacity)
 {
 	if ( !cnt )
 		return CONT_IS_NULL;
+	if ( required_capacity <= cnt->capacity )
+		return INVALID_REQUIRED_CAPACITY;
 
 	double final_capacity = cnt->capacity;
 	double growth_factor = cnt->growth_factor;
-	
+
 	while (final_capacity < required_capacity)
 		final_capacity *= growth_factor;
-	
+
 	size_t final_capacity_;
 	if (final_capacity >= SIZE_MAX)
 		final_capacity_ = required_capacity;
@@ -894,12 +896,12 @@ int cont_grow(cont* cnt, size_t required_capacity)
 		if (final_capacity_ < required_capacity) // sanity check
 			final_capacity_ = required_capacity;
 	}
-		
+
 	size_t max_capacity = cnt->max_capacity;
-	
+
 	if ( (max_capacity != cont_NO_LIMIT) && (final_capacity_ > max_capacity) )
 		final_capacity_ = max_capacity;
-		
+
 	size_t unit = cnt->unit;
 	if ( final_capacity_ > SIZE_MAX / unit )
 		return SIZE_OVERFLOW;
@@ -921,7 +923,7 @@ int cont_grow(cont* cnt, size_t required_capacity)
 
 	cnt->addr = ptr;
 	cnt->capacity = final_capacity_;
-	
+
 	return 0;
 }
 
@@ -932,6 +934,9 @@ int cont_ensure(cont* cnt, size_t space)
 
 	if ( (cnt->capacity - cnt->count) < space )
 	{
+		if ( space > SIZE_MAX - cnt->count )
+			return SIZE_OVERFLOW;
+
 		int ret = cont_grow(cnt, cnt->count+space);
 		if ( ret )
 			return ret;

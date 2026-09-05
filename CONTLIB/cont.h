@@ -70,12 +70,12 @@ int cont_set_count(cont* cnt, size_t count);
 int cont_set_capacity(cont* cnt, size_t capacity);
 int cont_set_max_capacity(cont* cnt, size_t max_size);
 int cont_set_growth_factor(cont* cnt, double growth_factor);
-int cont_lock(cont* cnt); // NEW
+int cont_lock(cont* cnt);
 void* cont_get(cont* cnt, size_t index);
 int cont_set(cont* cnt, size_t index, void* item);
 int cont_cv(cont* cnt, size_t index, void* buffer, size_t n);
 void* cont_pop(cont* cnt);
-int cont_mkroom(cont* cnt, size_t index); // NEW
+int cont_mkroom(cont* cnt, size_t index);
 int cont_push(cont* cnt, void* item);
 int cont_push_front(cont* cnt, void* item);
 int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items);
@@ -97,6 +97,6 @@ int cont_extend(cont* cnt, cont* cnt2);
 cont cont_split(cont* cnt, size_t index);
 cont cont_sub(cont* cnt, size_t index, size_t n_elements);
 int cont_grow(cont* cnt, size_t required_capacity);
-int cont_ensure(cont* cont, size_t space); // NEW
+int cont_ensure(cont* cnt, size_t space);
 
 #endif

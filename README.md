@@ -9,7 +9,7 @@
 ---
 
 ## Overview
-**CONTILB** provides **cont** objects - generic and dynamic data containers for storing elements of arbitrary size and alignment.
+**CONTILB** provides **cont** objects - generic and dynamic data containers for storing elements of arbitrary size and alignment (size of an over-aligned object must be the multiple of the alignment).
 
 **cont** struct (non-opaque):
 ```c
@@ -90,6 +90,7 @@ const cont INVALID_CONT = (cont){0};
 - [cont_set_capacity](#-cont_set_capacity-)
 - [cont_set_max_capacity](#-cont_set_capacity-)
 - [cont_set_growth_factor](#-cont_set_capacity-)
+- [cont_lock](#-cont_lock-)
 
 ### Getting elements
 
@@ -103,9 +104,11 @@ const cont INVALID_CONT = (cont){0};
 
 ### Adding and modifying elements
 
+- [cont_PUSH](#-cont_push-)
 - [cont_ITEM](#-cont_item--1)
+- [cont_mkroom](#-cont_mkroom-#)
 - [cont_set](#-cont_set-)
-- [cont_push](#-cont_push-)
+- [cont_push](#-cont_push--1)
 - [cont_push_front](#-cont_push_front-)
 - [cont_append](#-cont_append-)
 - [cont_prepend](#-cont_prepend-)
@@ -116,6 +119,7 @@ const cont INVALID_CONT = (cont){0};
 
 ### Resizing container and removing elements
 
+- [cont_ensure](#-cont_ensure-)
 - [cont_set_space](#-cont_set_space-)
 - [cont_grow](#-cont_grow-)
 - [cont_shrink](#-cont_shrink-)
@@ -128,6 +132,7 @@ const cont INVALID_CONT = (cont){0};
 
 - [cont_reverse](#-cont_reverse-)
 - [cont_set_blank](#-cont_set_blank-)
+- [cont_INDEX](#-cont_index-)
 
 <p align="right">
 <a href="#table-of-contents">GO TO TOP ^</a>
@@ -344,6 +349,31 @@ Sets container growth factor. Valid range is by default defined by the values:
   
 ---
 
+### ** **cont_lock** **
+
+```c
+int cont_lock(cont* cnt);;
+```
+
+Sets `.max_capacity` to the current `.count` effectively locking a container. The function will trim the buffer if the current `.capacity` is greater than the current `.count`. Equivalent to calling: `cont_set_max_capacity(cnt, cnt->count);`.
+
+* **Return (success):** 
+
+  * `0`
+
+* **Return (failure):**
+
+  * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `EMPTY_CONT` - `(.count == 0)`
+  * `REALLOC_FAILURE`
+  * `ALIGNED_ALLOC_FAILURE`
+
+<p align="right">
+<a href="#full-method-list">GO TO METHOD LIST ^</a>
+</p>
+  
+---
+
 ## Getting Elements
 
 ### ** **cont_ITEM** **
@@ -508,6 +538,37 @@ Returns an exact copy of the container. On failure, it returns `INVALID_CONT`.
 
 ## Adding elements / setting values
 
+### ** **cont_PUSH** **
+
+```c
+cont_PUSH(cont_ptr, type);
+```
+
+Special macro for bypassing the API. Pushes an item at the end of a container and increases `.count` by 1. Defined as:
+```c
+// cont.h
+
+#define cont_PUSH(cnt, type) 							  		\
+				 ( (type*)((cnt)->addr) )[(cnt)->count++]
+```
+
+Usage:
+```c
+cont_PUSH(cont_ptr, int) = 33; // push directly without safety checks
+
+// call cont_ensure to make sure there is a room for the element
+// and to make it if there isn't (unless .max_capacity is reached)
+if ( cont_ensure(cont_ptr, 1) )
+    cont_PUSH(cont_ptr, double) = 0.1234;
+```
+You can use [cont_ensure](#-cont_ensure-) to make the macro 100% safe regardless of the container's state.
+
+<p align="right">
+<a href="#full-method-list">GO TO METHOD LIST ^</a>
+</p>
+  
+---
+
 ### ** **cont_ITEM** **
 
 ```c
@@ -518,10 +579,34 @@ Special macro for bypassing API and getting straight to the element at a given i
 ```c
 // cont.h
 
-#define cont_ITEM(cnt, index, type) 					  \
-                ((type*)cnt->addr)[index]
+#define cont_ITEM(cnt, index, type) 					  		\
+				 ( (type*)((cnt)->addr) )[index]
 ```
 No safety mechanisms, use with caution.
+
+<p align="right">
+<a href="#full-method-list">GO TO METHOD LIST ^</a>
+</p>
+  
+---
+
+### ** **cont_mkroom** **
+
+```c
+int cont_mkroom(cont* cnt, size_t index);
+```
+
+Makes a room for an element at a specified index shifting elements to the right.
+
+* **Return (success):** 
+
+  * `0`
+
+* **Return (failure):**
+
+  * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `INVALID_INDEX` - `(index >= .count)`
+  * `MAX_CAPACITY_EXCEEDED`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -773,6 +858,29 @@ Inserts `num_of_items` elements from a given array at a specified index shifting
 
 ## Resizing / deleting elements
 
+### ** **cont_ensure** **
+
+```c
+int cont_ensure(cont* cnt, size_t space);
+```
+
+Checks if a container has available `space`. If it doesn't, the function calls [cont_grow](#-cont_grow-) to make it.
+
+* **Return (success):** 
+
+  * `0`
+
+* **Return (failure):**
+
+  * `CONT_IS_NULL` - `(cnt == NULL)`
+  * [cont_grow](#-cont_grow-) error codes
+
+<p align="right">
+<a href="#full-method-list">GO TO METHOD LIST ^</a>
+</p>
+  
+---
+  
 ### ** **cont_set_space** **
 
 ```c

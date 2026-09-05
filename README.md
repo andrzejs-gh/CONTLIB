@@ -562,7 +562,7 @@ cont_PUSH(cont_ptr, int) = 33; // push directly without safety checks
 
 // call cont_ensure to make sure there is a room for the element
 // and to make it if there isn't (unless .max_capacity is reached)
-if ( cont_ensure(cont_ptr, 1) )
+if ( !cont_ensure(cont_ptr, 1) )
     cont_PUSH(cont_ptr, double) = 0.1234;
 ```
 You can use [cont_ensure](#-cont_ensure-) to make the macro 100% safe regardless of the container's state.

@@ -391,8 +391,8 @@ Special macro for bypassing API and getting straight to the element at a given i
 ```
 To make sure the index is valid use [cont_INDEX](#-cont_index-):
 ```c
-if ( cont_INDEX(cnt, i) )
-    cont_ITEM(cnt, i, int) = 33;
+if ( cont_INDEX(cnt, index) )
+    cont_ITEM(cnt, index, int) = 33;
 ```
 
 <p align="right">
@@ -588,8 +588,8 @@ Special macro for bypassing API and getting straight to the element at a given i
 ```
 To make sure the index is valid use [cont_INDEX](#-cont_index-):
 ```c
-if ( cont_INDEX(cnt, i) )
-    cont_ITEM(cnt, i, int) = 33;
+if ( cont_INDEX(cnt, index) )
+    cont_ITEM(cnt, index, int) = 33;
 ```
 
 <p align="right">

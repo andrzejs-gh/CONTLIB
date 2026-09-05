@@ -94,7 +94,7 @@ const cont INVALID_CONT = (cont){0};
 
 ### Getting elements
 
-- [cot_ITEM](#-cont_item-)
+- [cont_ITEM](#-cont_item-)
 - [cont_get](#-cont_get-)
 - [cont_pop](#-cont_pop-)
 - [cont_cv](#-cont_cv-)
@@ -106,7 +106,6 @@ const cont INVALID_CONT = (cont){0};
 
 - [cont_PUSH](#-cont_push-)
 - [cont_ITEM](#-cont_item--1)
-- [cont_mkroom](#-cont_mkroom-#)
 - [cont_set](#-cont_set-)
 - [cont_push](#-cont_push--1)
 - [cont_push_front](#-cont_push_front-)
@@ -120,6 +119,7 @@ const cont INVALID_CONT = (cont){0};
 ### Resizing container and removing elements
 
 - [cont_ensure](#-cont_ensure-)
+- [cont_mkroom](#-cont_mkroom-#)
 - [cont_set_space](#-cont_set_space-)
 - [cont_grow](#-cont_grow-)
 - [cont_shrink](#-cont_shrink-)
@@ -389,7 +389,11 @@ Special macro for bypassing API and getting straight to the element at a given i
 #define cont_ITEM(cnt, index, type) 					  \
                 ((type*)cnt->addr)[index]
 ```
-No safety mechanisms, use with caution.
+To make sure the index is valid use [cont_INDEX](#-cont_index-):
+```c
+if ( cont_INDEX(cnt, i) )
+    cont_ITEM(cnt, i, int) = 33;
+```
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -582,31 +586,11 @@ Special macro for bypassing API and getting straight to the element at a given i
 #define cont_ITEM(cnt, index, type) 					  		\
 				 ( (type*)((cnt)->addr) )[index]
 ```
-No safety mechanisms, use with caution.
-
-<p align="right">
-<a href="#full-method-list">GO TO METHOD LIST ^</a>
-</p>
-  
----
-
-### ** **cont_mkroom** **
-
+To make sure the index is valid use [cont_INDEX](#-cont_index-):
 ```c
-int cont_mkroom(cont* cnt, size_t index);
+if ( cont_INDEX(cnt, i) )
+    cont_ITEM(cnt, i, int) = 33;
 ```
-
-Makes a room for an element at a specified index shifting elements to the right.
-
-* **Return (success):** 
-
-  * `0`
-
-* **Return (failure):**
-
-  * `CONT_IS_NULL` - `(cnt == NULL)`
-  * `INVALID_INDEX` - `(index >= .count)`
-  * `MAX_CAPACITY_EXCEEDED`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>
@@ -880,7 +864,31 @@ Checks if a container has available `space`. If it doesn't, the function calls [
 </p>
   
 ---
+
+### ** **cont_mkroom** **
+
+```c
+int cont_mkroom(cont* cnt, size_t index);
+```
+
+Makes a room for an element at a specified index shifting elements to the right.
+
+* **Return (success):** 
+
+  * `0`
+
+* **Return (failure):**
+
+  * `CONT_IS_NULL` - `(cnt == NULL)`
+  * `INVALID_INDEX` - `(index >= .count)`
+  * `MAX_CAPACITY_EXCEEDED`
+
+<p align="right">
+<a href="#full-method-list">GO TO METHOD LIST ^</a>
+</p>
   
+---
+
 ### ** **cont_set_space** **
 
 ```c
@@ -1100,6 +1108,32 @@ If `n == 0`, all bytes from the specified position to the end of the buffer are 
   * `CONT_IS_NULL` - `(cnt == NULL)`
   * `INVALID_INDEX` - `(position >= .capacity)`
   * `INVALID_RANGE` - `(n > .capacity - position)`
+
+<p align="right">
+<a href="#full-method-list">GO TO METHOD LIST ^</a>
+</p>
+  
+---
+
+### ** **cont_INDEX** **
+
+```c
+cont_INDEX(cont* cnt, size_t index);
+```
+
+Checks whether a given index is valid. Defined as:
+```c
+#define cont_INDEX(cnt, index) 									\
+				  ( (index) >= (cnt)->count ) ? false : true;
+```
+
+* **Evaluates to (success):** 
+
+  * `true`
+
+* **Evaluates to (failure):**
+
+  * `false`
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>

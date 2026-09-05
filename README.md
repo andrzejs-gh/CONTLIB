@@ -391,8 +391,12 @@ Special macro for bypassing API and getting straight to the element at a given i
 ```
 To make sure the index is valid use [cont_INDEX](#-cont_index-):
 ```c
+if ( cont_INDEX(cnt, index) )       
+    cont_ITEM(cnt, index, int) = 33;    // setting the value at index
+    
+double x;
 if ( cont_INDEX(cnt, index) )
-    cont_ITEM(cnt, index, int) = 33;
+    x = cont_ITEM(cnt, index, double);  // retrieving the value at index
 ```
 
 <p align="right">
@@ -588,8 +592,12 @@ Special macro for bypassing API and getting straight to the element at a given i
 ```
 To make sure the index is valid use [cont_INDEX](#-cont_index-):
 ```c
+if ( cont_INDEX(cnt, index) )       
+    cont_ITEM(cnt, index, int) = 33;    // setting the value at index
+    
+double x;
 if ( cont_INDEX(cnt, index) )
-    cont_ITEM(cnt, index, int) = 33;
+    x = cont_ITEM(cnt, index, double);  // retrieving the value at index
 ```
 
 <p align="right">

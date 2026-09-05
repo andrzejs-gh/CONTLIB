@@ -2,6 +2,7 @@
 #define CONTLIB_CONT_H
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #define cont_UNIT_BUFF_SIZE 256
 
@@ -13,11 +14,18 @@
 #define cont_GF_LBOUND 1.0
 #define cont_GF_UBOUND 10.0
 
-#define cont_NEW(type, capacity) 						  \
+#define cont_NEW(type, capacity) 						  		\
 cont_new(capacity, sizeof(type), _Alignof(type))
 
-#define cont_ITEM(cnt, index, type) 					  \
-((type*)cnt->addr)[index]
+#define cont_INDEX(cnt, index) 									\
+( (index) >= (cnt)->count ) ? false : true;
+
+#define cont_ITEM(cnt, index, type) 					  		\
+( (type*)((cnt)->addr) )[index]
+
+#define cont_PUSH(cnt, type) 							  		\
+( (type*)((cnt)->addr) )[(cnt)->count++]
+
 
 enum error_codes
 {
@@ -62,10 +70,12 @@ int cont_set_count(cont* cnt, size_t count);
 int cont_set_capacity(cont* cnt, size_t capacity);
 int cont_set_max_capacity(cont* cnt, size_t max_size);
 int cont_set_growth_factor(cont* cnt, double growth_factor);
+int cont_lock(cont* cnt);
 void* cont_get(cont* cnt, size_t index);
 int cont_set(cont* cnt, size_t index, void* item);
 int cont_cv(cont* cnt, size_t index, void* buffer, size_t n);
 void* cont_pop(cont* cnt);
+int cont_mkroom(cont* cnt, size_t index);
 int cont_push(cont* cnt, void* item);
 int cont_push_front(cont* cnt, void* item);
 int cont_write(cont* cnt, size_t index, void* arr, size_t num_of_items);
@@ -87,6 +97,7 @@ int cont_extend(cont* cnt, cont* cnt2);
 cont cont_split(cont* cnt, size_t index);
 cont cont_sub(cont* cnt, size_t index, size_t n_elements);
 int cont_grow(cont* cnt, size_t required_capacity);
+int cont_ensure(cont* cnt, size_t space);
 
 #ifdef CONT_IMPLEMENTATION
 
@@ -162,6 +173,9 @@ int cont_set_count(cont* cnt, size_t count)
 {
     if ( !cnt )
         return CONT_IS_NULL;
+
+    if ( (cnt->max_capacity != cont_NO_LIMIT) && (count > cnt->max_capacity) )
+        return MAX_CAPACITY_EXCEEDED;
 
     if ( count > cnt->capacity )
     {
@@ -253,6 +267,7 @@ int cont_set_max_capacity(cont* cnt, size_t max_size)
                 return ALIGNED_ALLOC_FAILURE;
 
             size_t size_to_copy = (max_size > cnt->count) ? cnt->count : max_size;
+            size_to_copy *= unit;
 
             memcpy(ptr, cnt->addr, size_to_copy);
             free(cnt->addr);
@@ -292,6 +307,16 @@ int cont_set_growth_factor(cont* cnt, double growth_factor)
     return 0;
 }
 
+int cont_lock(cont* cnt)
+{
+    if ( !cnt )
+        return CONT_IS_NULL;
+    if ( !cnt->count )
+        return EMPTY_CONT;
+
+    return cont_set_max_capacity(cnt, cnt->count);
+}
+
 void* cont_get(cont* cnt, size_t index)
 {
     if ( !cnt )
@@ -318,7 +343,7 @@ int cont_set(cont* cnt, size_t index, void* item)
     if ( item == cnt->addr+(index*unit) ) // if item points to itself
         return 0;
 
-    memcpy(cnt->addr + (index*unit), item, unit);
+    memcpy(cnt->addr+(index*unit), item, unit);
 
     return 0;
 }
@@ -367,6 +392,27 @@ void* cont_pop(cont* cnt)
 
     cnt->count--;
     return cnt->addr + (count-1)*cnt->unit;
+}
+
+int cont_mkroom(cont* cnt, size_t index)
+{
+    if ( !cnt )
+        return CONT_IS_NULL;
+
+    size_t count = cnt->count;
+
+    if ( index >= count )
+        return INVALID_INDEX;
+
+    if ( (cnt->max_capacity != cont_NO_LIMIT) && (count == cnt->max_capacity) )
+        return MAX_CAPACITY_EXCEEDED;
+
+    size_t unit = cnt->unit;
+    unsigned char* addr = cnt->addr;
+
+    memmove(addr+((index+1)*unit), addr+(index*unit), (count-index)*unit);
+
+    return 0;
 }
 
 int cont_push(cont* cnt, void* item)
@@ -976,6 +1022,21 @@ int cont_grow(cont* cnt, size_t required_capacity)
 
     cnt->addr = ptr;
     cnt->capacity = final_capacity_;
+
+    return 0;
+}
+
+int cont_ensure(cont* cnt, size_t space)
+{
+    if ( !cnt )
+        return CONT_IS_NULL;
+
+    if ( (cnt->capacity - cnt->count) < space )
+    {
+        int ret = cont_grow(cnt, cnt->count+space);
+        if ( ret )
+            return ret;
+    }
 
     return 0;
 }

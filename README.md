@@ -355,7 +355,7 @@ Sets container growth factor. Valid range is by default defined by the values:
 int cont_lock(cont* cnt);;
 ```
 
-Sets `.max_capacity` to the current `.count` effectively locking a container. The function will trim the buffer if the current `.capacity` is greater than the current `.count`. Equivalent to calling: `cont_set_max_capacity(cnt, cnt->count);`.
+Sets `.max_capacity` equal to the current `.count` effectively locking a container. The function will trim the buffer if the current `.capacity` is greater than the current `.count`. Equivalent to calling: `cont_set_max_capacity(cnt, cnt->count);`.
 
 * **Return (success):** 
 

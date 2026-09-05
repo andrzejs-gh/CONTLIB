@@ -119,7 +119,7 @@ const cont INVALID_CONT = (cont){0};
 ### Resizing container and removing elements
 
 - [cont_ensure](#-cont_ensure-)
-- [cont_mkroom](#-cont_mkroom-#)
+- [cont_mkroom](#-cont_mkroom-)
 - [cont_set_space](#-cont_set_space-)
 - [cont_grow](#-cont_grow-)
 - [cont_shrink](#-cont_shrink-)

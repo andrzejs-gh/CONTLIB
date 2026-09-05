@@ -408,6 +408,12 @@ int cont_mkroom(cont* cnt, size_t index)
     if ( (cnt->max_capacity != cont_NO_LIMIT) && (count == cnt->max_capacity) )
         return MAX_CAPACITY_EXCEEDED;
 
+    if ( count == cnt->capacity )
+    {
+        int ret = cont_grow(cnt, cnt->capacity+1);
+        if ( ret ) return ret;
+    }
+
     size_t unit = cnt->unit;
     unsigned char* addr = cnt->addr;
 

@@ -899,6 +899,7 @@ Makes a room for an element at a specified index shifting elements to the right.
   * `CONT_IS_NULL` - `(cnt == NULL)`
   * `INVALID_INDEX` - `(index >= .count)`
   * `MAX_CAPACITY_EXCEEDED`
+  * [cont_grow](#-cont_grow-) error codes
 
 <p align="right">
 <a href="#full-method-list">GO TO METHOD LIST ^</a>

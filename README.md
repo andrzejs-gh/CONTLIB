@@ -124,7 +124,7 @@ const cont INVALID_CONT = (cont){0};
 - [cont_grow](#-cont_grow-)
 - [cont_shrink](#-cont_shrink-)
 - [cont_remove](#-cont_remove-)
-- [cont_cut](#-cont_cut-)
+- [cont_remove_range](#-cont_remove_range-)
 - [cont_clear](#-cont_clear-)
 - [cont_collapse](#-cont_collapse-)
 

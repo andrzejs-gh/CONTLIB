@@ -791,7 +791,8 @@ int cont_insert(cont* cnt, size_t index, void* item);
 ```
 
 Inserts an element at a specified index, shifting any existing elements to the right. The item cannot point to the inside of the container.
-For inline insertion use [cont_mkroom](#-cont_mkroom-) combined with [cont_ITEM](#-cont_item-):
+
+For inline insertion use [cont_mkroom](#-cont_mkroom-) combined with [cont_ITEM](#-cont_item--1):
 ```c
 // example
 

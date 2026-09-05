@@ -330,8 +330,8 @@ Sets container growth factor. Valid range is by default defined by the values:
 ```c
 // cont.h
 
-#define cont_GF_LBOUND 1.0
-#define cont_GF_UBOUND 10.0
+#define cont_GF_LBOUND 1.0    // GF must be greater than lower bound
+#define cont_GF_UBOUND 10.0   // GF must be smaller than upper bound
 ```
 
 * **Return (success):** 

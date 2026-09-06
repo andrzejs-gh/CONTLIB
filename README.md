@@ -43,8 +43,8 @@ Growth factor can be set to any value between:
 ```c
 // cont.h
 
-#define cont_GF_LBOUND 1.0
-#define cont_GF_UBOUND 10.0
+#define cont_GF_LBOUND 1.0    // GF must be greater than lower bound
+#define cont_GF_UBOUND 10.0   // GF must be smaller than upper bound
 ```
 the default value is set to `2.0`:
 ```c

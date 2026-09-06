@@ -393,7 +393,7 @@ Special macro for bypassing API and getting straight to the element at a given i
 Usage:
 ```c
 int x;
-x = cont_ITEM(cnt, index, double);  // retrieving the value at index
+x = cont_ITEM(cnt, index, int);  // retrieving the value at index
 
 cont_ITEM(cnt, index, int) = 33;    // setting the value at index
 ```
@@ -601,7 +601,7 @@ Special macro for bypassing API and getting straight to the element at a given i
 Usage:
 ```c
 int x;
-x = cont_ITEM(cnt, index, double);  // retrieving the value at index
+x = cont_ITEM(cnt, index, int);  // retrieving the value at index
 
 cont_ITEM(cnt, index, int) = 33;    // setting the value at index
 ```

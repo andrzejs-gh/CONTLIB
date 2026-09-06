@@ -389,6 +389,14 @@ Special macro for bypassing API and getting straight to the element at a given i
 #define cont_ITEM(cnt, index, type) 					  \
                 ((type*)cnt->addr)[index]
 ```
+
+Usage:
+```c
+int x;
+x = cont_ITEM(cnt, index, double);  // retrieving the value at index
+
+cont_ITEM(cnt, index, int) = 33;    // setting the value at index
+```
 To make sure the index is valid use [cont_INDEX](#-cont_index-):
 ```c
 if ( cont_INDEX(cnt, index) )       
@@ -589,6 +597,13 @@ Special macro for bypassing API and getting straight to the element at a given i
 
 #define cont_ITEM(cnt, index, type) 					  		\
 				 ( (type*)((cnt)->addr) )[index]
+```
+Usage:
+```c
+int x;
+x = cont_ITEM(cnt, index, double);  // retrieving the value at index
+
+cont_ITEM(cnt, index, int) = 33;    // setting the value at index
 ```
 To make sure the index is valid use [cont_INDEX](#-cont_index-):
 ```c
